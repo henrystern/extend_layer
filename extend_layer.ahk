@@ -74,8 +74,8 @@ sc017::MouseMove, 0, (mouse_offset * -1), 0, R
 +sc017::MouseMove, 0, (mouse_offset * -5), 0, R
 *sc018::MouseMove, (15 * mouse_offset), 0, 0, R
 ;sc019::
-;sc01a::
-;sc01b::
+sc01a::WheelUp
+sc01b::WheelDown
 
 ;;  *** Row 3 - home row
 ;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
@@ -117,6 +117,6 @@ sc034::Alt
 sc039::Enter
 
 ;; *** Mouse Buttons
-;XButton1::
-;XButton2::
+XButton1::^c
+XButton2::^v
 
