@@ -7,8 +7,18 @@ SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
 ;settings
 mouse_offset = 20 ;Mouse movement step
 
-CapsLock::return
+*CapsLock::return ;* so caps is not triggered on mod+caps
 LShift & RShift::CapsLock
+
+;release modifiers if they are still held when extend is released
+CapsLock up::
+    If GetKeyState("sc032", "P")
+        send {Shift up}
+    If GetKeyState("sc033", "P")
+        send {Ctrl up}
+    If GetKeyState("sc034", "P")
+        send {Alt up}
+    return
 
 #If, GetKeyState("CapsLock", "P") ;Your CapsLock hotkeys go below
 
