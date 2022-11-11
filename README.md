@@ -4,6 +4,7 @@
 
 ### Customization
 * Customization should be self explanatory from the comments and the [AHK keylist](https://www.autohotkey.com/docs/KeyList.htm)
+* I recommend using the alphanumeric keycodes so the extend layer works consistently regardless of layout.
 
 ### Startup
 * Win+r 'shell:startup'
