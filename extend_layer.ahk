@@ -1,0 +1,58 @@
+﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
+; #Warn  ; Enable warnings to assist with detecting common errors.
+SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
+SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+#installkeybdhook
+
+;settings
+mouse_offset = 20 ;amount to move mouse
+
+CapsLock::return
+
+#If, GetKeyState("CapsLock", "P") ;Your CapsLock hotkeys go below
+
+;;  *** Row 1 - number row
+;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
+;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
+
+;;  *** Row 2 - upper letter row
+;;  ||Tab     |Q     |W     |E     |R     |T     |Y     |U     |I     |O     |P     |[     |]     ||
+;;  ||RWWc00f |sc010 |sc011 |sc012 |sc013 |sc014 |sc015 |sc016 |sc017 |sc018 |sc019 |sc01a |sc01b ||
+
+sc010::Home
+sc011::Up
+sc012::End
+sc013::Delete
+sc014::Esc
+sc015::PgUp
+
+sc017::MouseMove, 0, (mouse_offset * -1), 0, R
+
+;;  *** Row 3 - home row
+;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
+;;  ||sc03a |sc01e |sc01f |sc020 |sc021 |sc022 |sc023 |sc024 |sc025 |sc026 |sc027 |sc028 |sc02b ||
+
+sc01e::Left
+sc01f::Down
+sc020::Right
+sc021::Backspace
+sc022::Appskey
+sc023::PgDn
+
+sc024::MouseMove, (mouse_offset * -1), 0, 0, R
+sc025::MouseMove, 0, mouse_offset, 0, R
+sc026::MouseMove, mouse_offset, 0, 0, R
+
+;;  *** Row 4 - lower letter row
+;;  ||LS/GT |Z     |X     |C     |V     |B     |N     |M     |,     |.     |/     |Enter |Space ||
+;;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
+
+sc02d::^c
+sc02e::LButton
+sc02f::^v
+
+sc032::Shift
+sc033::Ctrl
+sc034::Alt
+
+sc039::Enter
