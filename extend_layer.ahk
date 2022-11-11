@@ -44,12 +44,12 @@ F6::Media_Next
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
 ;sc029::
-sc002::send {F1}
-sc003::send {F2}
-sc004::send {F3}
-sc005::send {F4}
-sc006::send {F5}
-sc007::send {F6}
+sc002::send {blind}{F1}
+sc003::send {blind}{F2}
+sc004::send {blind}{F3}
+sc005::send {blind}{F4}
+sc006::send {blind}{F5}
+sc007::send {blind}{F6}
 ;sc008::
 ;sc009::
 ;sc00a::
