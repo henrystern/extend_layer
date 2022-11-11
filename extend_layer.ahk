@@ -70,11 +70,12 @@ sc027::^Backspace
 ;;  ||LS/GT |Z     |X     |C     |V     |B     |N     |M     |,     |.     |/     |Enter |Space ||
 ;;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
 
-;sc02c:: ;ISO Key
+sc056::^z
+sc02c::^x
 sc02d::^c
 sc02e::LButton
 sc02f::^v
-;sc030::
+sc030::RButton
 ;sc031::
 sc032::Shift
 sc033::Ctrl
