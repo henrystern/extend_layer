@@ -43,13 +43,13 @@ F6::Media_Next
 ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
-sc029::F1
-sc002::F2
-sc003::F3
-sc004::F4
-sc005::F5
-sc006::F6
-;sc007::
+;sc029::
+sc002::send {F1}
+sc003::send {F2}
+sc004::send {F3}
+sc005::send {F4}
+sc006::send {F5}
+sc007::send {F6}
 ;sc008::
 ;sc009::
 ;sc00a::
@@ -115,3 +115,4 @@ sc039::Enter
 ;; *** Mouse Buttons
 ;XButton1::
 ;XButton2::
+
