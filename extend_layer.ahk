@@ -69,9 +69,10 @@ sc012::End
 sc013::Delete
 sc014::Esc
 sc015::PgUp
-;sc016::
+*sc016::MouseMove, (-15 * mouse_offset), 0, 0, R
 sc017::MouseMove, 0, (mouse_offset * -1), 0, R
-;sc018::
++sc017::MouseMove, 0, (mouse_offset * -5), 0, R
+*sc018::MouseMove, (15 * mouse_offset), 0, 0, R
 ;sc019::
 ;sc01a::
 ;sc01b::
@@ -87,8 +88,11 @@ sc021::Backspace
 sc022::Appskey
 sc023::PgDn
 sc024::MouseMove, (mouse_offset * -1), 0, 0, R
++sc024::MouseMove, (mouse_offset * -5), 0, 0, R
 sc025::MouseMove, 0, mouse_offset, 0, R
++sc025::MouseMove, 0, mouse_offset * 5, 0, R
 sc026::MouseMove, mouse_offset, 0, 0, R
++sc026::MouseMove, mouse_offset * 5, 0, 0, R
 sc027::^Backspace
 ;sc028::
 ;sc02b::
