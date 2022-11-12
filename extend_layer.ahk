@@ -9,6 +9,12 @@ SetWorkingDir %A_ScriptDir%
 global FORCE := 1.5 ; acceleration
 global RESISTANCE := .95 ; limits acceleration and top speed
 
+;; *** Default Cursor Marks
+;; TODO: easier way for users to save cursor locations between sessions
+
+global MARKS := {}
+global awaiting_input = 0
+
 ;; *** Extend trigger settings
 ;; Modify the lines marked ----- to change the extend trigger
 
@@ -34,7 +40,7 @@ CapsLock up:: ; -------------------
 ;; *** Mappings
 ;;
 
-#If, GetKeyState("CapsLock", "P") ; ------------------------
+#If, GetKeyState("CapsLock", "P") and awaiting_input == 0 ; ------------------------
 
 ;;  *** Row 0 - function keys
 ;;
@@ -86,9 +92,9 @@ sc016::send {WheelUp 1}
 sc017::Return
 +sc017::JumpTopEdge()
 sc018::send {WheelDown 1}
-;sc019::
-;sc01a::
-;sc01b::
+sc019::^t
+sc01a::^+Tab
+sc01b::^Tab
 
 ;;  *** Row 3 - home row
 ;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
@@ -107,7 +113,15 @@ sc025::Return
 sc026::Return
 +sc026::JumpRightEdge()
 sc027::^Backspace
-;sc028::
+sc028::
+    tooltip, go to mark
+    awaiting_input = 1
+    Input, letter, L1 E
+    tooltip, went to mark at %letter%
+    SetTimer, RemoveToolTip, 2000
+    GoToMark(letter)
+    awaiting_input = 0
+    Return
 ;sc02b::
 
 ;;  *** Row 4 - lower letter row
@@ -116,15 +130,23 @@ sc027::^Backspace
 
 ;sc056::^z
 sc02c::^x
-sc02d::^c
+sc02d::^Ins
 sc02e::LButton
-sc02f::^v
+sc02f::+Ins
 sc030::RButton
 ;sc031::
 sc032::Shift
 sc033::Ctrl
 sc034::Alt
-;sc035::
+sc035::
+    tooltip, set mark
+    awaiting_input = 1
+    Input, letter, L1
+    tooltip, set mark at %letter%
+    SetTimer, RemoveToolTip, 2000
+    SetMark(letter)
+    awaiting_input = 0
+    Return
 
 ;sc01c::
 sc039::Enter
@@ -134,6 +156,22 @@ sc039::Enter
 
 ;XButton1::^c
 ;XButton2::^v
+
+;; *** Cursor Marks Functions
+;;
+
+SetMark(letter) {
+    MouseGetPos, cur_x, cur_y
+    MARKS[(letter)] := {x:cur_x, y:cur_y}
+}
+
+GoToMark(letter) {
+    MouseMove, MARKS[letter].x, MARKS[letter].y
+}
+
+RemoveToolTip:
+    tooltip
+    return
 
 ;; *** Mouse Functions
 ;; Credit to https://github.com/4strid/mouse-control.autohotkey
