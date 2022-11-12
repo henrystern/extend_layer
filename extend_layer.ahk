@@ -1,17 +1,23 @@
-﻿#NoEnv  ; Recommended for performance and compatibility with future AutoHotkey releases.
-; #Warn  ; Enable warnings to assist with detecting common errors.
-SendMode Input  ; Recommended for new scripts due to its superior speed and reliability.
-SetWorkingDir %A_ScriptDir%  ; Ensures a consistent starting directory.
+﻿#NoEnv
+SendMode Input
+SetWorkingDir %A_ScriptDir%
 #installkeybdhook
 
-;settings
-mouse_offset = 20 ;Mouse movement step
+;; *** Mouse Settings
+;;
 
-*CapsLock::return ;* so caps is not triggered on mod+caps
+global FORCE := 1.5 ; acceleration
+global RESISTANCE := .95 ; limits acceleration and top speed
+
+;; *** Extend trigger settings
+;; Modify the lines marked ----- to change the extend trigger
+
+*CapsLock::SetTimer, MoveCursor, 10 ; ------------------- note: * is important so the key is not triggered on mod+caps
 LShift & RShift::CapsLock
 
-;release modifiers if they are still held when extend is released
-CapsLock up::
+; release modifiers if they are still held when extend is released
+CapsLock up:: ; -------------------
+    SetTimer, MoveCursor, off
     If GetKeyState("sc032", "P")
         send {Shift up}
     If GetKeyState("sc033", "P")
@@ -20,10 +26,9 @@ CapsLock up::
         send {Alt up}
     return
 
-#If, GetKeyState("CapsLock", "P") ;Your CapsLock hotkeys go below
+#If, GetKeyState("CapsLock", "P") ; ------------------------
 
 ;;  *** Row 0 - function keys
-;;
 ;;
 
 F1::Volume_Mute
@@ -69,10 +74,10 @@ sc012::End
 sc013::Delete
 sc014::Esc
 sc015::PgUp
-sc016::WheelUp
-+sc017::MouseMove, 0, (mouse_offset * -1), 0, R
-sc017::MouseMove, 0, (mouse_offset * -5), 0, R
-sc018::WheelDown
+sc016::send {WheelUp 1}
+sc017::Return
++sc017::JumpTopEdge()
+sc018::send {WheelDown 1}
 ;sc019::
 ;sc01a::
 ;sc01b::
@@ -87,12 +92,12 @@ sc020::Right
 sc021::Backspace
 sc022::Appskey
 sc023::PgDn
-+sc024::MouseMove, (mouse_offset * -1), 0, 0, R
-sc024::MouseMove, (mouse_offset * -5), 0, 0, R
-+sc025::MouseMove, 0, mouse_offset, 0, R
-sc025::MouseMove, 0, mouse_offset * 5, 0, R
-+sc026::MouseMove, mouse_offset, 0, 0, R
-sc026::MouseMove, mouse_offset * 5, 0, 0, R
+sc024::Return
++sc024::JumpLeftEdge()
+sc025::Return
++sc025::JumpBottomEdge()
+sc026::Return
++sc026::JumpRightEdge()
 sc027::^Backspace
 ;sc028::
 ;sc02b::
@@ -101,7 +106,7 @@ sc027::^Backspace
 ;;  ||LS/GT |Z     |X     |C     |V     |B     |N     |M     |,     |.     |/     |Enter |Space ||
 ;;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
 
-sc056::^z
+;sc056::^z
 sc02c::^x
 sc02d::^c
 sc02e::LButton
@@ -117,6 +122,87 @@ sc034::Alt
 sc039::Enter
 
 ;; *** Mouse Buttons
+;;
+
 ;XButton1::^c
 ;XButton2::^v
 
+;; *** Mouse Functions
+;; Credit to https://github.com/4strid/mouse-control.autohotkey
+
+#If
+
+global VELOCITY_X := 0
+global VELOCITY_Y := 0
+
+Accelerate(velocity, pos, neg) {
+  If (pos + neg == 0) {
+    Return 0
+  }
+  Else {
+    Return velocity * RESISTANCE + FORCE * (pos + neg)
+  }
+}
+
+MoveCursor() {
+  UP := 0
+  LEFT := 0
+  DOWN := 0
+  RIGHT := 0
+  
+  UP := UP - GetKeyState("sc017", "P")
+  LEFT := LEFT - GetKeyState("sc024", "P")
+  DOWN := DOWN + GetKeyState("sc025", "P")
+  RIGHT := RIGHT + GetKeyState("sc026", "P")
+  
+  VELOCITY_X := Accelerate(VELOCITY_X, LEFT, RIGHT)
+  VELOCITY_Y := Accelerate(VELOCITY_Y, UP, DOWN)
+
+  RestoreDPI:=DllCall("SetThreadDpiAwarenessContext","ptr",-3,"ptr") ; enable per-monitor DPI awareness
+
+  MouseMove, %VELOCITY_X%, %VELOCITY_Y%, 0, R
+}
+
+JumpMiddle() {
+  CoordMode, Mouse, Screen
+  MouseMove, (A_ScreenWidth // 2), (A_ScreenHeight // 2)
+}
+
+MonitorLeftEdge() {
+  mx := 0
+  CoordMode, Mouse, Screen
+  MouseGetPos, mx
+  monitor := (mx // A_ScreenWidth)
+
+  return monitor * A_ScreenWidth
+}
+
+JumpLeftEdge() {
+  x := MonitorLeftEdge() + 50
+  y := 0
+  CoordMode, Mouse, Screen
+  MouseGetPos,,y
+  MouseMove, x,y
+}
+
+JumpBottomEdge() {
+  x := 0
+  CoordMode, Mouse, Screen
+  MouseGetPos, x
+  MouseMove, x,(A_ScreenHeight - 50)
+}
+
+JumpTopEdge() {
+  x := 0
+  CoordMode, Mouse, Screen
+  MouseGetPos, x
+  MouseMove, x,20
+}
+
+JumpRightEdge() {
+  x := MonitorLeftEdge() + A_ScreenWidth - 50
+  y := 0
+  CoordMode, Mouse, Screen
+  MouseGetPos,,y
+  MouseMove, x,y
+}
