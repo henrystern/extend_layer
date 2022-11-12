@@ -26,6 +26,10 @@ CapsLock up:: ; -------------------
         send {Alt up}
     return
 
+
+;; *** Mappings
+;;
+
 #If, GetKeyState("CapsLock", "P") ; ------------------------
 
 ;;  *** Row 0 - function keys
