@@ -12,7 +12,7 @@ global RESISTANCE := .95 ; limits acceleration and top speed
 ;; *** Default Cursor Marks
 ;; TODO: easier way for users to save cursor locations between sessions
 
-global MARKS := {}
+global MARKS := { m : { x : (A_ScreenWidth // 2), y : (A_ScreenHeight // 2) } }
 global awaiting_input = 0
 
 ;; *** Extend trigger settings
@@ -211,12 +211,6 @@ MoveCursor() {
   RestoreDPI:=DllCall("SetThreadDpiAwarenessContext","ptr",-3,"ptr") ; enable per-monitor DPI awareness
   SetMouseDelay, -1  ; Makes movement smoother.
   MouseMove, %VELOCITY_X%, %VELOCITY_Y%, 0, R
-}
-
-JumpMiddle() {
-  CoordMode, Mouse, Screen
-  SetMouseDelay, -1
-  MouseMove, (A_ScreenWidth // 2), (A_ScreenHeight // 2)
 }
 
 MonitorLeftEdge() {
