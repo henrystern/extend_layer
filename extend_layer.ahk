@@ -44,12 +44,12 @@ F6::Media_Next
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
 ;sc029::
-;sc002::send {blind}{F1}
-;sc003::send {blind}{F2}
-;sc004::send {blind}{F3}
-;sc005::send {blind}{F4}
-;sc006::send {blind}{F5}
-;sc007::send {blind}{F6}
+sc002::F1
+sc003::F2
+sc004::F3
+sc005::F4
+sc006::F5
+sc007::F6
 ;sc008::
 ;sc009::
 ;sc00a::
@@ -69,13 +69,13 @@ sc012::End
 sc013::Delete
 sc014::Esc
 sc015::PgUp
-*sc016::MouseMove, (-15 * mouse_offset), 0, 0, R
-sc017::MouseMove, 0, (mouse_offset * -1), 0, R
-+sc017::MouseMove, 0, (mouse_offset * -5), 0, R
-*sc018::MouseMove, (15 * mouse_offset), 0, 0, R
+sc016::WheelUp
++sc017::MouseMove, 0, (mouse_offset * -1), 0, R
+sc017::MouseMove, 0, (mouse_offset * -5), 0, R
+sc018::WheelDown
 ;sc019::
-sc01a::WheelUp
-sc01b::WheelDown
+;sc01a::
+;sc01b::
 
 ;;  *** Row 3 - home row
 ;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
@@ -87,12 +87,12 @@ sc020::Right
 sc021::Backspace
 sc022::Appskey
 sc023::PgDn
-sc024::MouseMove, (mouse_offset * -1), 0, 0, R
-+sc024::MouseMove, (mouse_offset * -5), 0, 0, R
-sc025::MouseMove, 0, mouse_offset, 0, R
-+sc025::MouseMove, 0, mouse_offset * 5, 0, R
-sc026::MouseMove, mouse_offset, 0, 0, R
-+sc026::MouseMove, mouse_offset * 5, 0, 0, R
++sc024::MouseMove, (mouse_offset * -1), 0, 0, R
+sc024::MouseMove, (mouse_offset * -5), 0, 0, R
++sc025::MouseMove, 0, mouse_offset, 0, R
+sc025::MouseMove, 0, mouse_offset * 5, 0, R
++sc026::MouseMove, mouse_offset, 0, 0, R
+sc026::MouseMove, mouse_offset * 5, 0, 0, R
 sc027::^Backspace
 ;sc028::
 ;sc02b::
@@ -117,6 +117,6 @@ sc034::Alt
 sc039::Enter
 
 ;; *** Mouse Buttons
-XButton1::^c
-XButton2::^v
+;XButton1::^c
+;XButton2::^v
 
