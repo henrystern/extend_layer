@@ -18,7 +18,7 @@ global awaiting_input = 0
 ;; *** Extend trigger settings
 ;; Modify the lines marked ----- to change the extend trigger
 
-*CapsLock::SetTimer, MoveCursor, 10 ; ------------------- note: * is important so the key is not triggered on mod+caps
+*CapsLock::SetTimer, MoveCursor, 10 ; -------------------
 LShift & RShift::CapsLock
 
 ; release modifiers if they are still held when extend is released
@@ -157,6 +157,12 @@ sc039::Enter
 ;XButton1::^c
 ;XButton2::^v
 
+;; *** Functions
+;;
+;;
+
+#If
+
 ;; *** Cursor Marks Functions
 ;;
 
@@ -175,8 +181,6 @@ RemoveToolTip:
 
 ;; *** Mouse Functions
 ;; Credit to https://github.com/4strid/mouse-control.autohotkey
-
-#If
 
 global VELOCITY_X := 0
 global VELOCITY_Y := 0
