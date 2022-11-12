@@ -24,6 +24,10 @@ CapsLock up:: ; -------------------
         send {Ctrl up}
     If GetKeyState("sc034", "P")
         send {Alt up}
+    If GetKeyState("sc02e", "P")
+        send {LButton up}
+    If GetKeyState("sc030", "P")
+        send {RButton up}
     return
 
 
@@ -163,12 +167,13 @@ MoveCursor() {
   VELOCITY_Y := Accelerate(VELOCITY_Y, UP, DOWN)
 
   RestoreDPI:=DllCall("SetThreadDpiAwarenessContext","ptr",-3,"ptr") ; enable per-monitor DPI awareness
-
+  SetMouseDelay, -1  ; Makes movement smoother.
   MouseMove, %VELOCITY_X%, %VELOCITY_Y%, 0, R
 }
 
 JumpMiddle() {
   CoordMode, Mouse, Screen
+  SetMouseDelay, -1
   MouseMove, (A_ScreenWidth // 2), (A_ScreenHeight // 2)
 }
 
@@ -186,6 +191,7 @@ JumpLeftEdge() {
   y := 0
   CoordMode, Mouse, Screen
   MouseGetPos,,y
+  SetMouseDelay, -1
   MouseMove, x,y
 }
 
@@ -193,6 +199,7 @@ JumpBottomEdge() {
   x := 0
   CoordMode, Mouse, Screen
   MouseGetPos, x
+  SetMouseDelay, -1
   MouseMove, x,(A_ScreenHeight - 50)
 }
 
@@ -200,6 +207,7 @@ JumpTopEdge() {
   x := 0
   CoordMode, Mouse, Screen
   MouseGetPos, x
+  SetMouseDelay, -1
   MouseMove, x,20
 }
 
@@ -208,5 +216,6 @@ JumpRightEdge() {
   y := 0
   CoordMode, Mouse, Screen
   MouseGetPos,,y
+  SetMouseDelay, -1
   MouseMove, x,y
 }
