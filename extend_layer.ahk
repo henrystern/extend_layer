@@ -167,11 +167,13 @@ sc039::Enter
 ;;
 
 SetMark(letter) {
+    CoordMode, Mouse, Screen
     MouseGetPos, cur_x, cur_y
     MARKS[(letter)] := {x:cur_x, y:cur_y}
 }
 
 GoToMark(letter) {
+    CoordMode, Mouse, Screen
     MouseGetPos, prev_x, prev_y
     MouseMove, MARKS[letter].x, MARKS[letter].y
     MARKS["'"] := { x : prev_x, y : prev_y }
