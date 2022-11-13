@@ -114,13 +114,19 @@ sc026::Return
 +sc026::JumpRightEdge()
 sc027::^Backspace
 sc028::
-    tooltip, go to mark
+    ToolTip, go to mark,,, 1
     awaiting_input = 1
+    i = 2
+    For key, value in MARKS {
+        CoordMode, ToolTip, Screen
+        ToolTip, % key, % value.x, % value.y, % i
+        i++
+    }
     Input, letter, L1 E
-    tooltip, went to mark at %letter%
-    SetTimer, RemoveToolTip, 2000
+    ToolTip, went to mark at %letter%,,, i
     GoToMark(letter)
     awaiting_input = 0
+    RemoveToolTip(i)
     Return
 ;sc02b::
 
@@ -139,13 +145,13 @@ sc032::Shift
 sc033::Ctrl
 sc034::Alt
 sc035::
-    tooltip, set mark
+    ToolTip, set mark
     awaiting_input = 1
     Input, letter, L1
-    tooltip, set mark at %letter%
-    SetTimer, RemoveToolTip, 2000
+    ToolTip, set mark at %letter%
     SetMark(letter)
     awaiting_input = 0
+    RemoveToolTip(1)
     Return
 
 ;sc01c::
@@ -179,9 +185,11 @@ GoToMark(letter) {
     MARKS["'"] := { x : prev_x, y : prev_y }
 }
 
-RemoveToolTip:
-    tooltip
-    return
+RemoveToolTip(i) {
+    Loop % i {
+        ToolTip, , , , % A_Index
+    }
+}
 
 ;; *** Mouse Functions
 ;; Credit to https://github.com/4strid/mouse-control.autohotkey
