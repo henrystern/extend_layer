@@ -172,7 +172,9 @@ SetMark(letter) {
 }
 
 GoToMark(letter) {
+    MouseGetPos, prev_x, prev_y
     MouseMove, MARKS[letter].x, MARKS[letter].y
+    ObjRawSet(MARKS, "'", { x : prev_x, y : prev_y })
 }
 
 RemoveToolTip:
