@@ -94,7 +94,7 @@ sc017::Return
 sc018::^+Tab
 sc019::^Tab
 sc01a::^t
-sc01b::!Tab
+sc01b::^w
 
 ;;  *** Row 3 - home row
 ;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
