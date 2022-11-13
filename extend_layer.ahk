@@ -12,7 +12,29 @@ global RESISTANCE := .95 ; limits acceleration and top speed
 ;; *** Default Cursor Marks
 ;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
 
-global MARKS := { m : { x : (A_ScreenWidth // 2), y : (A_ScreenHeight // 2) } }
+global MARKS := {}
+MARKS["m"] := {x : (A_ScreenWidth // 2), y : (A_ScreenHeight // 2)}
+
+global EM_MARKS := {}
+EM_MARKS["q"] := {x : 1*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+EM_MARKS["w"] := {x : 3*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+EM_MARKS["f"] := {x : 5*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+EM_MARKS["a"] := {x : 1*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+EM_MARKS["r"] := {x : 3*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+EM_MARKS["s"] := {x : 5*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+EM_MARKS["x"] := {x : 1*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+EM_MARKS["c"] := {x : 3*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+EM_MARKS["d"] := {x : 5*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+EM_MARKS["l"] := {x : 7*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+EM_MARKS["u"] := {x : 9*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+EM_MARKS["y"] := {x : 11*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+EM_MARKS["n"] := {x : 7*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+EM_MARKS["e"] := {x : 9*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+EM_MARKS["i"] := {x : 11*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+EM_MARKS["h"] := {x : 7*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+EM_MARKS[","] := {x : 9*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+EM_MARKS["."] := {x : 11*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+
 global awaiting_input = 0
 
 ;; *** Extend trigger settings
@@ -62,7 +84,7 @@ F6::Media_Next
 ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
-;sc029::
+sc029::GoToMark(EM_MARKS)
 sc002::F1
 sc003::F2
 sc004::F3
@@ -113,21 +135,8 @@ sc025::Return
 sc026::Return
 +sc026::JumpRightEdge()
 sc027::^Backspace
-sc028::
-    ToolTip, go to mark,,, 1
-    awaiting_input = 1
-    i = 2
-    For key, value in MARKS {
-        CoordMode, ToolTip, Screen
-        ToolTip, % key, % value.x, % value.y, % i
-        i++
-    }
-    Input, letter, L1 E
-    ToolTip, went to mark at %letter%,,, i
-    GoToMark(letter)
-    awaiting_input = 0
-    RemoveToolTip(i)
-    Return
+sc028::GoToMark(MARKS)
++sc028::GoToMark(EM_MARKS)
 ;sc02b::
 
 ;;  *** Row 4 - lower letter row
@@ -144,15 +153,7 @@ sc031::send {WheelDown 1}
 sc032::Shift
 sc033::Ctrl
 sc034::Alt
-sc035::
-    ToolTip, set mark
-    awaiting_input = 1
-    Input, letter, L1
-    ToolTip, set mark at %letter%
-    SetMark(letter)
-    awaiting_input = 0
-    RemoveToolTip(1)
-    Return
+sc035::SetMark()
 
 ;sc01c::
 sc039::Enter
@@ -172,17 +173,35 @@ sc039::Enter
 ;; *** Cursor Marks Functions
 ;;
 
-SetMark(letter) {
+SetMark() {
+    ToolTip, set mark
+    awaiting_input = 1
+    Input, letter, L1
+    ToolTip, set mark at %letter%
     CoordMode, Mouse, Screen
     MouseGetPos, cur_x, cur_y
     MARKS[(letter)] := {x:cur_x, y:cur_y}
+    awaiting_input = 0
+    RemoveToolTip(1)
 }
 
-GoToMark(letter) {
+GoToMark(array) {
+    awaiting_input = 1
+    i = 1
+    For key, value in array{
+        if (i == 21) ; tooltip window limit is 20
+            Break
+        CoordMode, ToolTip, Screen
+        ToolTip, % key, % value.x, % value.y, % i
+        i++
+    }
+    Input, letter, L1 E
     CoordMode, Mouse, Screen
     MouseGetPos, prev_x, prev_y
-    MouseMove, MARKS[letter].x, MARKS[letter].y
+    MouseMove, array[letter].x, array[letter].y
     MARKS["'"] := { x : prev_x, y : prev_y }
+    awaiting_input = 0
+    RemoveToolTip(i-1)
 }
 
 RemoveToolTip(i) {
