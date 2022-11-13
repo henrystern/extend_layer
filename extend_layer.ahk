@@ -91,10 +91,10 @@ sc015::PgUp
 sc016::send {WheelUp 1}
 sc017::Return
 +sc017::JumpTopEdge()
-sc018::send {WheelDown 1}
-sc019::^t
-sc01a::^+Tab
-sc01b::^Tab
+sc018::^+Tab
+sc019::^Tab
+sc01a::^t
+sc01b::!Tab
 
 ;;  *** Row 3 - home row
 ;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
@@ -134,7 +134,7 @@ sc02d::^Ins
 sc02e::LButton
 sc02f::+Ins
 sc030::RButton
-;sc031::
+sc031::send {WheelDown 1}
 sc032::Shift
 sc033::Ctrl
 sc034::Alt
