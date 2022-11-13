@@ -10,13 +10,13 @@ global FORCE := 1.5 ; acceleration
 global RESISTANCE := .95 ; limits acceleration and top speed
 
 ;; *** Default Cursor Marks
-;; TODO: easier way for users to save cursor locations between sessions
+;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
 
 global MARKS := { m : { x : (A_ScreenWidth // 2), y : (A_ScreenHeight // 2) } }
 global awaiting_input = 0
 
 ;; *** Extend trigger settings
-;; Modify the lines marked ----- to change the extend trigger
+;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
 
 *CapsLock::SetTimer, MoveCursor, 10 ; -------------------
 LShift & RShift::CapsLock
@@ -174,7 +174,7 @@ SetMark(letter) {
 GoToMark(letter) {
     MouseGetPos, prev_x, prev_y
     MouseMove, MARKS[letter].x, MARKS[letter].y
-    ObjRawSet(MARKS, "'", { x : prev_x, y : prev_y })
+    MARKS["'"] := { x : prev_x, y : prev_y }
 }
 
 RemoveToolTip:
