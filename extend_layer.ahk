@@ -165,7 +165,7 @@ ClearModifiers() {
 GenerateMarks() {
     global 
     SysGet, num_monitors, MonitorCount
-    Loop, min(%num_monitors%, 10) {
+    Loop, % Min(num_monitors, 10) {
         EM_MARKS_MON_%A_Index% := {}
         SysGet, mon, Monitor, %A_Index%
         mon_width := monRight - monLeft
