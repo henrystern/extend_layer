@@ -43,19 +43,9 @@ global awaiting_input = 0
 *CapsLock::SetTimer, MoveCursor, 10 ; -------------------
 LShift & RShift::CapsLock
 
-; release modifiers if they are still held when extend is released
 CapsLock up:: ; -------------------
     SetTimer, MoveCursor, off
-    If GetKeyState("sc032", "P")
-        send {Shift up}
-    If GetKeyState("sc033", "P")
-        send {Ctrl up}
-    If GetKeyState("sc034", "P")
-        send {Alt up}
-    If GetKeyState("sc02e", "P")
-        send {LButton up}
-    If GetKeyState("sc030", "P")
-        send {RButton up}
+    ClearModifiers()
     return
 
 
@@ -170,9 +160,27 @@ sc039::Enter
 
 #If
 
+;; *** Misc
+;;
+
+; release modifiers if they were still being held down when extend was released
+ClearModifiers() {
+    If GetKeyState("sc032", "P")
+        send {Shift up}
+    If GetKeyState("sc033", "P")
+        send {Ctrl up}
+    If GetKeyState("sc034", "P")
+        send {Alt up}
+    If GetKeyState("sc02e", "P")
+        send {LButton up}
+    If GetKeyState("sc030", "P")
+        send {RButton up}
+}
+
 ;; *** Cursor Marks Functions
 ;;
 
+; Associate a key with the current cursor location
 SetMark() {
     ToolTip, set mark
     awaiting_input = 1
@@ -185,7 +193,9 @@ SetMark() {
     RemoveToolTip(1)
 }
 
+; Move cursor to mark location
 GoToMark(array) {
+    ClearModifiers()
     awaiting_input = 1
     i = 1
     For key, value in array{
@@ -204,6 +214,7 @@ GoToMark(array) {
     RemoveToolTip(i-1)
 }
 
+; Clears mark location tooltips
 RemoveToolTip(i) {
     Loop % i {
         ToolTip, , , , % A_Index
