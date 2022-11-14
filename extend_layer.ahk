@@ -19,7 +19,6 @@ global MARKS := {}
 global EM_MARKS := {} ; Easymotion style grid
 
 GenerateMarks()
-
 global awaiting_input = 0
 
 ;; ## Mappings
@@ -58,12 +57,12 @@ F6::Media_Next
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
 sc029::GoToMark(EM_MARKS)
-sc002::F1
-sc003::F2
-sc004::F3
-sc005::F4
-sc006::F5
-sc007::F6
+;sc002::F1
+;sc003::F2
+;sc004::F3
+;sc005::F4
+;sc006::F5
+;sc007::F6
 ;sc008::
 ;sc009::
 ;sc00a::
@@ -162,10 +161,34 @@ ClearModifiers() {
 
 ;; ### Cursor Marks Functions
 ;;
-
 ; Generate default marks TODO: a loop would be neater. Also need to improve compatibility for different monitor setups (primary on right) requires logic 
 GenerateMarks() {
+    global 
     SysGet, num_monitors, MonitorCount
+    Loop, min(%num_monitors%, 10) {
+        EM_MARKS_MON_%A_Index% := {}
+        SysGet, mon, Monitor, %A_Index%
+        mon_width := monRight - monLeft
+        mon_height := monBottom - monTop
+        EM_MARKS_MON_%A_Index%["q"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["w"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["f"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["a"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["r"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["s"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["x"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["c"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["d"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["l"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["u"] := {x : monLeft + 9*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["y"] := {x : monLeft + 11*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["n"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["e"] := {x : monLeft + 9*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["i"] := {x : monLeft + 11*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["h"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%[","] := {x : monLeft + 9*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["."] := {x : monLeft + 11*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
+    }
     if (num_monitors == 1) {
         EM_MARKS["q"] := {x : 1*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
         EM_MARKS["w"] := {x : 3*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
@@ -277,11 +300,24 @@ GoToMark(array) {
         i++
     }
     Input, letter, L1 E
-    MouseGetPos, prev_x, prev_y
-    MouseMove, array[letter].x, array[letter].y
-    MARKS["'"] := { x : prev_x, y : prev_y }
+    if (IsNum(letter)) {
+        awaiting_input = 0
+        RemoveToolTip(i-1)
+        GoToMark(EM_MARKS_MON_%letter%)
+    }
+    else {
+        MouseGetPos, prev_x, prev_y
+        MouseMove, array[letter].x, array[letter].y
+        MARKS["'"] := { x : prev_x, y : prev_y }
+    }
     awaiting_input = 0
     RemoveToolTip(i-1)
+}
+
+IsNum(str) {
+	if str is number
+		return true
+	return false
 }
 
 ; Clears mark location tooltips
