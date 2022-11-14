@@ -25,8 +25,10 @@ global awaiting_input = 0
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
 
 *CapsLock:: ; -------------------
-    SetTimer, MoveCursor, 10 
-    SetTimer, SmoothScrollWheel, 40 
+    SetTimer, MoveCursor, 10
+    SetTimer, SmoothScrollWheel, 40
+    return
+
 LShift & RShift::CapsLock
 
 CapsLock up:: ; -------------------
