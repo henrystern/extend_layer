@@ -3,13 +3,13 @@ SendMode Input
 SetWorkingDir %A_ScriptDir%
 #installkeybdhook
 
-;; *** Mouse Settings
+;; ## Mouse Settings
 ;;
 
 global FORCE := 1.5 ; acceleration
 global RESISTANCE := .95 ; limits acceleration and top speed
 
-;; *** Default Cursor Marks
+;; ## Default Cursor Marks
 ;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
 
 global MARKS := {}
@@ -37,7 +37,7 @@ EM_MARKS["."] := {x : 11*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
 
 global awaiting_input = 0
 
-;; *** Extend trigger settings
+;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
 
 *CapsLock:: ; -------------------
@@ -51,14 +51,9 @@ CapsLock up:: ; -------------------
     ClearModifiers()
     return
 
-
-;; *** Mappings
-;;
-
 #If, GetKeyState("CapsLock", "P") and awaiting_input == 0 ; ------------------------
 
-;;  *** Row 0 - function keys
-;;
+;;  ### Row 0 - function keys
 
 F1::Volume_Mute
 F2::Volume_Down
@@ -73,7 +68,7 @@ F6::Media_Next
 ;F11::
 ;F12::
 
-;;  *** Row 1 - number row
+;;  ### Row 1 - number row
 ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
@@ -88,12 +83,12 @@ sc007::F6
 ;sc009::
 ;sc00a::
 ;sc00b::
-;sc00c::
-;sc00d::
+sc00c::^w
+sc00d::^t
 
 ;sc00e::
 
-;;  *** Row 2 - upper letter row
+;;  ### Row 2 - upper letter row
 ;;  ||Tab     |Q     |W     |E     |R     |T     |Y     |U     |I     |O     |P     |[     |]     ||
 ;;  ||RWWc00f |sc010 |sc011 |sc012 |sc013 |sc014 |sc015 |sc016 |sc017 |sc018 |sc019 |sc01a |sc01b ||
 
@@ -106,12 +101,12 @@ sc015::PgUp
 sc016::Return
 sc017::Return
 +sc017::JumpTopEdge()
-sc018::^+Tab
-sc019::^Tab
-sc01a::^t
-sc01b::^w
+sc018::Return
+;sc019::
+sc01a::^+Tab
+sc01b::^Tab
 
-;;  *** Row 3 - home row
+;;  ### Row 3 - home row
 ;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
 ;;  ||sc03a |sc01e |sc01f |sc020 |sc021 |sc022 |sc023 |sc024 |sc025 |sc026 |sc027 |sc028 |sc02b ||
 
@@ -132,17 +127,17 @@ sc028::GoToMark(MARKS)
 +sc028::GoToMark(EM_MARKS)
 ;sc02b::
 
-;;  *** Row 4 - lower letter row
+;;  ### Row 4 - lower letter row
 ;;  ||LS/GT |Z     |X     |C     |V     |B     |N     |M     |,     |.     |/     |Enter |Space ||
 ;;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
 
-;sc056::^z
+sc056::^z
 sc02c::^x
 sc02d::^Ins
 sc02e::LButton
 sc02f::+Ins
 sc030::RButton
-sc031::Return
+;sc031::
 sc032::Shift
 sc033::Ctrl
 sc034::Alt
@@ -151,19 +146,19 @@ sc035::SetMark()
 ;sc01c::
 sc039::Enter
 
-;; *** Mouse Buttons
+;; ### Mouse Buttons
 ;;
 
 ;XButton1::^c
 ;XButton2::^v
 
-;; *** Functions
-;;
-;;
-
 #If
 
-;; *** Misc
+;; ## Functions
+;;
+;;
+
+;; ### Misc
 ;;
 
 ; release modifiers if they were still being held down when extend was released
@@ -180,7 +175,7 @@ ClearModifiers() {
         send {RButton up}
 }
 
-;; *** Cursor Marks Functions
+;; ### Cursor Marks Functions
 ;;
 
 ; Associate a key with the current cursor location
@@ -224,8 +219,8 @@ RemoveToolTip(i) {
     }
 }
 
-;; *** Mouse Functions
-;; Credit to https://github.com/4strid/mouse-control.autohotkey
+;; ### Mouse Functions
+;; With credit to https://github.com/4strid/mouse-control.autohotkey
 
 global VELOCITY_X := 0
 global VELOCITY_Y := 0
@@ -234,7 +229,7 @@ global VELOCITY_Y := 0
 SmoothScrollWheel(){
     if GetKeyState("sc016", "P")
         send {WheelUp}
-    else if GetKeyState("sc031", "P")
+    else if GetKeyState("sc018", "P")
         send {WheelDown}
 }
 
