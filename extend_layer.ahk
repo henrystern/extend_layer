@@ -1,7 +1,10 @@
 ﻿#NoEnv
+#installkeybdhook
 SendMode Input
 SetWorkingDir %A_ScriptDir%
-#installkeybdhook
+CoordMode, Mouse, Screen
+CoordMode, ToolTip, Screen
+SetMouseDelay, -1
 
 ;; ## Mouse Settings
 ;;
@@ -13,27 +16,9 @@ global RESISTANCE := .95 ; limits acceleration and top speed
 ;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
 
 global MARKS := {}
-MARKS["m"] := {x : (A_ScreenWidth // 2), y : (A_ScreenHeight // 2)}
+global EM_MARKS := {} ; Easymotion style grid
 
-global EM_MARKS := {}
-EM_MARKS["q"] := {x : 1*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-EM_MARKS["w"] := {x : 3*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-EM_MARKS["f"] := {x : 5*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-EM_MARKS["a"] := {x : 1*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-EM_MARKS["r"] := {x : 3*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-EM_MARKS["s"] := {x : 5*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-EM_MARKS["x"] := {x : 1*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-EM_MARKS["c"] := {x : 3*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-EM_MARKS["d"] := {x : 5*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-EM_MARKS["l"] := {x : 7*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-EM_MARKS["u"] := {x : 9*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-EM_MARKS["y"] := {x : 11*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-EM_MARKS["n"] := {x : 7*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-EM_MARKS["e"] := {x : 9*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-EM_MARKS["i"] := {x : 11*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-EM_MARKS["h"] := {x : 7*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-EM_MARKS[","] := {x : 9*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-EM_MARKS["."] := {x : 11*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+GenerateMarks()
 
 global awaiting_input = 0
 
@@ -178,13 +163,102 @@ ClearModifiers() {
 ;; ### Cursor Marks Functions
 ;;
 
+; Generate default marks
+GenerateMarks() {
+    SysGet, num_monitors, MonitorCount
+    if (num_monitors == 1) {
+        EM_MARKS["q"] := {x : 1*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+        EM_MARKS["w"] := {x : 3*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+        EM_MARKS["f"] := {x : 5*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+        EM_MARKS["a"] := {x : 1*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+        EM_MARKS["r"] := {x : 3*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+        EM_MARKS["s"] := {x : 5*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+        EM_MARKS["x"] := {x : 1*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+        EM_MARKS["c"] := {x : 3*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+        EM_MARKS["d"] := {x : 5*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+        EM_MARKS["l"] := {x : 7*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+        EM_MARKS["u"] := {x : 9*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+        EM_MARKS["y"] := {x : 11*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
+        EM_MARKS["n"] := {x : 7*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+        EM_MARKS["e"] := {x : 9*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+        EM_MARKS["i"] := {x : 11*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
+        EM_MARKS["h"] := {x : 7*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+        EM_MARKS[","] := {x : 9*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+        EM_MARKS["."] := {x : 11*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
+    }
+    else if (num_monitors == 2) {
+        SysGet, mon1, Monitor, 1
+        mon1_width := mon1Right - mon1Left
+        mon1_height := mon1Bottom - mon1Top
+        SysGet, mon2, Monitor, 2
+        mon2_width := mon2Right - mon2Left
+        mon2_height := mon2Bottom - mon2Top
+        EM_MARKS["q"] := {x : 1*(mon1_width // 12), y : 1*(mon1_height // 6)}
+        EM_MARKS["w"] := {x : 6*(mon1_width // 12), y : 1*(mon1_height // 6)}
+        EM_MARKS["f"] := {x : 11*(mon1_width // 12), y : 1*(mon1_height // 6)}
+        EM_MARKS["a"] := {x : 1*(mon1_width // 12), y : 3*(mon1_height // 6)}
+        EM_MARKS["r"] := {x : 6*(mon1_width // 12), y : 3*(mon1_height // 6)}
+        EM_MARKS["s"] := {x : 11*(mon1_width // 12), y : 3*(mon1_height // 6)}
+        EM_MARKS["x"] := {x : 1*(mon1_width // 12), y : 5*(mon1_height // 6)}
+        EM_MARKS["c"] := {x : 6*(mon1_width // 12), y : 5*(mon1_height // 6)}
+        EM_MARKS["d"] := {x : 11*(mon1_width // 12), y : 5*(mon1_height // 6)}
+        EM_MARKS["l"] := {x : mon1_width + 1*(mon2_width // 12), y : mon2Top + 1*(mon2_height // 6)}
+        EM_MARKS["u"] := {x : mon1_width + 6*(mon2_width // 12), y : mon2Top + 1*(mon2_height // 6)}
+        EM_MARKS["y"] := {x : mon1_width + 11*(mon2_width // 12), y : mon2Top + 1*(mon2_height // 6)}
+        EM_MARKS["n"] := {x : mon1_width + 1*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
+        EM_MARKS["e"] := {x : mon1_width + 6*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
+        EM_MARKS["i"] := {x : mon1_width + 11*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
+        EM_MARKS["h"] := {x : mon1_width + 1*(mon2_width // 12), y : mon2Top + 5*(mon2_height // 6)}
+        EM_MARKS[","] := {x : mon1_width + 6*(mon2_width // 12), y : mon2Top + 5*(mon2_height // 6)}
+        EM_MARKS["."] := {x : mon1_width + 11*(mon2_width // 12), y : mon2Top + 5*(mon2_height // 6)}
+    }
+    else {
+        SysGet, VirtualScreenWidth, 78
+        SysGet, VirtualScreenHeight, 79
+        EM_MARKS["q"] := {x : 1*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
+        EM_MARKS["w"] := {x : 3*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
+        EM_MARKS["f"] := {x : 5*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
+        EM_MARKS["a"] := {x : 1*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
+        EM_MARKS["r"] := {x : 3*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
+        EM_MARKS["s"] := {x : 5*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
+        EM_MARKS["x"] := {x : 1*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
+        EM_MARKS["c"] := {x : 3*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
+        EM_MARKS["d"] := {x : 5*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
+        EM_MARKS["l"] := {x : 7*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
+        EM_MARKS["u"] := {x : 9*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
+        EM_MARKS["y"] := {x : 11*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
+        EM_MARKS["n"] := {x : 7*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
+        EM_MARKS["e"] := {x : 9*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
+        EM_MARKS["i"] := {x : 11*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
+        EM_MARKS["h"] := {x : 7*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
+        EM_MARKS[","] := {x : 9*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
+        EM_MARKS["."] := {x : 11*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
+    }
+}
+
+; for troubleshooting
+;SysGet, MonitorCount, MonitorCount
+;SysGet, MonitorPrimary, MonitorPrimary
+;MsgBox, Monitor Count:`t%MonitorCount%`nPrimary Monitor:`t%MonitorPrimary%
+;Loop, %MonitorCount%
+;{
+;    SysGet, MonitorName, MonitorName, %A_Index%
+;    SysGet, Monitor, Monitor, %A_Index%
+;    SysGet, MonitorWorkArea, MonitorWorkArea, %A_Index%
+;    MsgBox, Monitor:`t#%A_Index%`nName:`t%MonitorName%`nLeft:`t%MonitorLeft% (%MonitorWorkAreaLeft% work)`nTop:`t%MonitorTop% (%MonitorWorkAreaTop% work)`nRight:`t%MonitorRight% (%MonitorWorkAreaRight% work)`nBottom:`t%MonitorBottom% (%MonitorWorkAreaBottom% work)
+;}
+
+;; ## Mouse Settings
+;;
+
+
+
 ; Associate a key with the current cursor location
 SetMark() {
     ToolTip, set mark
     awaiting_input = 1
     Input, letter, L1
     ToolTip, set mark at %letter%
-    CoordMode, Mouse, Screen
     MouseGetPos, cur_x, cur_y
     MARKS[(letter)] := {x:cur_x, y:cur_y}
     awaiting_input = 0
@@ -199,12 +273,10 @@ GoToMark(array) {
     For key, value in array{
         if (i == 21) ; tooltip window limit is 20
             Break
-        CoordMode, ToolTip, Screen
         ToolTip, % key, % value.x, % value.y, % i
         i++
     }
     Input, letter, L1 E
-    CoordMode, Mouse, Screen
     MouseGetPos, prev_x, prev_y
     MouseMove, array[letter].x, array[letter].y
     MARKS["'"] := { x : prev_x, y : prev_y }
@@ -257,13 +329,11 @@ MoveCursor() {
   VELOCITY_Y := Accelerate(VELOCITY_Y, UP, DOWN)
 
   RestoreDPI:=DllCall("SetThreadDpiAwarenessContext","ptr",-3,"ptr") ; enable per-monitor DPI awareness
-  SetMouseDelay, -1  ; Makes movement smoother.
   MouseMove, %VELOCITY_X%, %VELOCITY_Y%, 0, R
 }
 
 MonitorLeftEdge() {
   mx := 0
-  CoordMode, Mouse, Screen
   MouseGetPos, mx
   monitor := (mx // A_ScreenWidth)
 
@@ -273,33 +343,25 @@ MonitorLeftEdge() {
 JumpLeftEdge() {
   x := MonitorLeftEdge() + 50
   y := 0
-  CoordMode, Mouse, Screen
   MouseGetPos,,y
-  SetMouseDelay, -1
   MouseMove, x,y
 }
 
 JumpBottomEdge() {
   x := 0
-  CoordMode, Mouse, Screen
   MouseGetPos, x
-  SetMouseDelay, -1
   MouseMove, x,(A_ScreenHeight - 50)
 }
 
 JumpTopEdge() {
   x := 0
-  CoordMode, Mouse, Screen
   MouseGetPos, x
-  SetMouseDelay, -1
   MouseMove, x,20
 }
 
 JumpRightEdge() {
   x := MonitorLeftEdge() + A_ScreenWidth - 50
   y := 0
-  CoordMode, Mouse, Screen
   MouseGetPos,,y
-  SetMouseDelay, -1
   MouseMove, x,y
 }
