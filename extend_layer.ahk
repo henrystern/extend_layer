@@ -18,7 +18,9 @@ global RESISTANCE := .95 ; limits acceleration and top speed
 global MARKS := {}
 global EM_MARKS := {} ; Easymotion style grid
 
-GenerateMarks()
+key_order := ["q", "a", "x", "w", "r", "c", "f", "s", "d", "l", "n", "h", "u", "e", ",", "y", "i", "."] ; alter depending on layout and preference, max 20 items
+GenerateMarks(key_order)
+
 global awaiting_input = 0
 
 ;; ## Mappings
@@ -164,32 +166,32 @@ ClearModifiers() {
 ;; ### Cursor Marks Functions
 ;;
 ; Generate default marks TODO: a loop would be neater. Also need to improve compatibility for different monitor setups (primary on right) requires logic 
-GenerateMarks() {
+GenerateMarks(key_order) {
     global 
     SysGet, num_monitors, MonitorCount
-    Loop, % Min(num_monitors, 10) {
+    Loop, % Min(num_monitors, 6) {
         EM_MARKS_MON_%A_Index% := {}
         SysGet, mon, Monitor, %A_Index%
         mon_width := monRight - monLeft
         mon_height := monBottom - monTop
-        EM_MARKS_MON_%A_Index%["q"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["w"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["f"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["q"] := {x : monLeft + 1*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["w"] := {x : monLeft + 3*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["f"] := {x : monLeft + 5*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["a"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["r"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["s"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["x"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["c"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["d"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["l"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["u"] := {x : monLeft + 9*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["y"] := {x : monLeft + 11*(mon_width // 12), y : monTop + 1*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["x"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["c"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["d"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["l"] := {x : monLeft + 7*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["u"] := {x : monLeft + 9*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["y"] := {x : monLeft + 11*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["n"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["e"] := {x : monLeft + 9*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["i"] := {x : monLeft + 11*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["h"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%[","] := {x : monLeft + 9*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["."] := {x : monLeft + 11*(mon_width // 12), y : monTop + 5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["h"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%[","] := {x : monLeft + 9*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
+        EM_MARKS_MON_%A_Index%["."] := {x : monLeft + 11*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
     }
     if (num_monitors == 1) {
         EM_MARKS["q"] := {x : 1*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
@@ -218,46 +220,24 @@ GenerateMarks() {
         SysGet, mon2, Monitor, 2
         mon2_width := mon2Right - mon2Left
         mon2_height := mon2Bottom - mon2Top
-        EM_MARKS["q"] := {x : 1*(mon1_width // 12), y : 1*(mon1_height // 6)}
-        EM_MARKS["w"] := {x : 6*(mon1_width // 12), y : 1*(mon1_height // 6)}
-        EM_MARKS["f"] := {x : 11*(mon1_width // 12), y : 1*(mon1_height // 6)}
+        EM_MARKS["q"] := {x : 1*(mon1_width // 12), y : .5*(mon1_height // 6)}
+        EM_MARKS["w"] := {x : 6*(mon1_width // 12), y : .5*(mon1_height // 6)}
+        EM_MARKS["f"] := {x : 11*(mon1_width // 12), y : .5*(mon1_height // 6)}
         EM_MARKS["a"] := {x : 1*(mon1_width // 12), y : 3*(mon1_height // 6)}
         EM_MARKS["r"] := {x : 6*(mon1_width // 12), y : 3*(mon1_height // 6)}
         EM_MARKS["s"] := {x : 11*(mon1_width // 12), y : 3*(mon1_height // 6)}
-        EM_MARKS["x"] := {x : 1*(mon1_width // 12), y : 5*(mon1_height // 6)}
-        EM_MARKS["c"] := {x : 6*(mon1_width // 12), y : 5*(mon1_height // 6)}
-        EM_MARKS["d"] := {x : 11*(mon1_width // 12), y : 5*(mon1_height // 6)}
-        EM_MARKS["l"] := {x : mon1_width + 1*(mon2_width // 12), y : mon2Top + 1*(mon2_height // 6)}
-        EM_MARKS["u"] := {x : mon1_width + 6*(mon2_width // 12), y : mon2Top + 1*(mon2_height // 6)}
-        EM_MARKS["y"] := {x : mon1_width + 11*(mon2_width // 12), y : mon2Top + 1*(mon2_height // 6)}
-        EM_MARKS["n"] := {x : mon1_width + 1*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
-        EM_MARKS["e"] := {x : mon1_width + 6*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
-        EM_MARKS["i"] := {x : mon1_width + 11*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
-        EM_MARKS["h"] := {x : mon1_width + 1*(mon2_width // 12), y : mon2Top + 5*(mon2_height // 6)}
-        EM_MARKS[","] := {x : mon1_width + 6*(mon2_width // 12), y : mon2Top + 5*(mon2_height // 6)}
-        EM_MARKS["."] := {x : mon1_width + 11*(mon2_width // 12), y : mon2Top + 5*(mon2_height // 6)}
-    }
-    else {
-        SysGet, VirtualScreenWidth, 78
-        SysGet, VirtualScreenHeight, 79
-        EM_MARKS["q"] := {x : 1*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
-        EM_MARKS["w"] := {x : 3*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
-        EM_MARKS["f"] := {x : 5*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
-        EM_MARKS["a"] := {x : 1*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
-        EM_MARKS["r"] := {x : 3*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
-        EM_MARKS["s"] := {x : 5*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
-        EM_MARKS["x"] := {x : 1*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
-        EM_MARKS["c"] := {x : 3*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
-        EM_MARKS["d"] := {x : 5*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
-        EM_MARKS["l"] := {x : 7*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
-        EM_MARKS["u"] := {x : 9*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
-        EM_MARKS["y"] := {x : 11*(VirtualScreenWidth // 12), y : 1*(VirtualScreenHeight // 6)}
-        EM_MARKS["n"] := {x : 7*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
-        EM_MARKS["e"] := {x : 9*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
-        EM_MARKS["i"] := {x : 11*(VirtualScreenWidth // 12), y : 3*(VirtualScreenHeight // 6)}
-        EM_MARKS["h"] := {x : 7*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
-        EM_MARKS[","] := {x : 9*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
-        EM_MARKS["."] := {x : 11*(VirtualScreenWidth // 12), y : 5*(VirtualScreenHeight // 6)}
+        EM_MARKS["x"] := {x : 1*(mon1_width // 12), y : 5.5*(mon1_height // 6)}
+        EM_MARKS["c"] := {x : 6*(mon1_width // 12), y : 5.5*(mon1_height // 6)}
+        EM_MARKS["d"] := {x : 11*(mon1_width // 12), y : 5.5*(mon1_height // 6)}
+        EM_MARKS["l"] := {x : mon2Left + 1*(mon2_width // 12), y : mon2Top + .5*(mon2_height // 6)}
+        EM_MARKS["u"] := {x : mon2Left + 6*(mon2_width // 12), y : mon2Top + .5*(mon2_height // 6)}
+        EM_MARKS["y"] := {x : mon2Left + 11*(mon2_width // 12), y : mon2Top + .5*(mon2_height // 6)}
+        EM_MARKS["n"] := {x : mon2Left + 1*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
+        EM_MARKS["e"] := {x : mon2Left + 6*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
+        EM_MARKS["i"] := {x : mon2Left + 11*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
+        EM_MARKS["h"] := {x : mon2Left + 1*(mon2_width // 12), y : mon2Top + 5.5*(mon2_height // 6)}
+        EM_MARKS[","] := {x : mon2Left + 6*(mon2_width // 12), y : mon2Top + 5.5*(mon2_height // 6)}
+        EM_MARKS["."] := {x : mon2Left + 11*(mon2_width // 12), y : mon2Top + 5.5*(mon2_height // 6)}
     }
 }
 
