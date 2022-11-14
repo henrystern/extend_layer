@@ -40,11 +40,14 @@ global awaiting_input = 0
 ;; *** Extend trigger settings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
 
-*CapsLock::SetTimer, MoveCursor, 10 ; -------------------
+*CapsLock:: ; -------------------
+    SetTimer, MoveCursor, 10 
+    SetTimer, SmoothScrollWheel, 40 
 LShift & RShift::CapsLock
 
 CapsLock up:: ; -------------------
     SetTimer, MoveCursor, off
+    SetTimer, SmoothScrollWheel, off
     ClearModifiers()
     return
 
@@ -100,7 +103,7 @@ sc012::End
 sc013::Delete
 sc014::Esc
 sc015::PgUp
-sc016::send {WheelUp 1}
+sc016::Return
 sc017::Return
 +sc017::JumpTopEdge()
 sc018::^+Tab
@@ -139,7 +142,7 @@ sc02d::^Ins
 sc02e::LButton
 sc02f::+Ins
 sc030::RButton
-sc031::send {WheelDown 1}
+sc031::Return
 sc032::Shift
 sc033::Ctrl
 sc034::Alt
@@ -226,6 +229,14 @@ RemoveToolTip(i) {
 
 global VELOCITY_X := 0
 global VELOCITY_Y := 0
+
+; Scroll Wheel -function and time is smoother than mapping directly
+SmoothScrollWheel(){
+    if GetKeyState("sc016", "P")
+        send {WheelUp}
+    else if GetKeyState("sc031", "P")
+        send {WheelDown}
+}
 
 Accelerate(velocity, pos, neg) {
   If (pos + neg == 0) {
