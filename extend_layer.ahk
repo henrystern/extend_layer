@@ -163,7 +163,7 @@ ClearModifiers() {
 ;; ### Cursor Marks Functions
 ;;
 
-; Generate default marks
+; Generate default marks TODO: a loop would be neater. Also need to improve compatibility for different monitor setups (primary on right) requires logic 
 GenerateMarks() {
     SysGet, num_monitors, MonitorCount
     if (num_monitors == 1) {
@@ -331,6 +331,8 @@ MoveCursor() {
   RestoreDPI:=DllCall("SetThreadDpiAwarenessContext","ptr",-3,"ptr") ; enable per-monitor DPI awareness
   MouseMove, %VELOCITY_X%, %VELOCITY_Y%, 0, R
 }
+
+;TODO these functions only work on the primary monitor should change to get active monitor
 
 MonitorLeftEdge() {
   mx := 0
