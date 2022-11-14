@@ -18,7 +18,7 @@ global RESISTANCE := .95 ; limits acceleration and top speed
 global MARKS := {}
 global EM_MARKS := {} ; Easymotion style grid
 
-key_order := ["q", "a", "x", "w", "r", "c", "f", "s", "d", "l", "n", "h", "u", "e", ",", "y", "i", "."] ; alter depending on layout and preference, max 20 items
+key_order := ["q", "w", "f", "a", "r", "s", "x", "c", "d", "l", "u", "y", "n", "e", "i", "h", ",", "."] ; alter depending on layout and preference, max 20 items
 GenerateMarks(key_order)
 
 global awaiting_input = 0
@@ -169,11 +169,15 @@ ClearModifiers() {
 GenerateMarks(key_order) {
     global 
     SysGet, num_monitors, MonitorCount
+    local i = 1
+    local j = 1
     Loop, % Min(num_monitors, 6) {
-        EM_MARKS_MON_%A_Index% := {}
-        SysGet, mon, Monitor, %A_Index%
-        mon_width := monRight - monLeft
-        mon_height := monBottom - monTop
+        local mon_number := A_Index
+        EM_MARKS_MON_%mon_number% := {}
+        SysGet, mon, Monitor, %mon_number%
+        local mon_width := monRight - monLeft
+        local mon_height := monBottom - monTop
+
         EM_MARKS_MON_%A_Index%["q"] := {x : monLeft + 1*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["w"] := {x : monLeft + 3*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["f"] := {x : monLeft + 5*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
@@ -192,66 +196,21 @@ GenerateMarks(key_order) {
         EM_MARKS_MON_%A_Index%["h"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%[","] := {x : monLeft + 9*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
         EM_MARKS_MON_%A_Index%["."] := {x : monLeft + 11*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
-    }
-    if (num_monitors == 1) {
-        EM_MARKS["q"] := {x : 1*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-        EM_MARKS["w"] := {x : 3*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-        EM_MARKS["f"] := {x : 5*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-        EM_MARKS["a"] := {x : 1*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-        EM_MARKS["r"] := {x : 3*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-        EM_MARKS["s"] := {x : 5*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-        EM_MARKS["x"] := {x : 1*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-        EM_MARKS["c"] := {x : 3*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-        EM_MARKS["d"] := {x : 5*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-        EM_MARKS["l"] := {x : 7*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-        EM_MARKS["u"] := {x : 9*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-        EM_MARKS["y"] := {x : 11*(A_ScreenWidth // 12), y : 1*(A_ScreenHeight // 6)}
-        EM_MARKS["n"] := {x : 7*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-        EM_MARKS["e"] := {x : 9*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-        EM_MARKS["i"] := {x : 11*(A_ScreenWidth // 12), y : 3*(A_ScreenHeight // 6)}
-        EM_MARKS["h"] := {x : 7*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-        EM_MARKS[","] := {x : 9*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-        EM_MARKS["."] := {x : 11*(A_ScreenWidth // 12), y : 5*(A_ScreenHeight // 6)}
-    }
-    else if (num_monitors == 2) {
-        SysGet, mon1, Monitor, 1
-        mon1_width := mon1Right - mon1Left
-        mon1_height := mon1Bottom - mon1Top
-        SysGet, mon2, Monitor, 2
-        mon2_width := mon2Right - mon2Left
-        mon2_height := mon2Bottom - mon2Top
-        EM_MARKS["q"] := {x : 1*(mon1_width // 12), y : .5*(mon1_height // 6)}
-        EM_MARKS["w"] := {x : 6*(mon1_width // 12), y : .5*(mon1_height // 6)}
-        EM_MARKS["f"] := {x : 11*(mon1_width // 12), y : .5*(mon1_height // 6)}
-        EM_MARKS["a"] := {x : 1*(mon1_width // 12), y : 3*(mon1_height // 6)}
-        EM_MARKS["r"] := {x : 6*(mon1_width // 12), y : 3*(mon1_height // 6)}
-        EM_MARKS["s"] := {x : 11*(mon1_width // 12), y : 3*(mon1_height // 6)}
-        EM_MARKS["x"] := {x : 1*(mon1_width // 12), y : 5.5*(mon1_height // 6)}
-        EM_MARKS["c"] := {x : 6*(mon1_width // 12), y : 5.5*(mon1_height // 6)}
-        EM_MARKS["d"] := {x : 11*(mon1_width // 12), y : 5.5*(mon1_height // 6)}
-        EM_MARKS["l"] := {x : mon2Left + 1*(mon2_width // 12), y : mon2Top + .5*(mon2_height // 6)}
-        EM_MARKS["u"] := {x : mon2Left + 6*(mon2_width // 12), y : mon2Top + .5*(mon2_height // 6)}
-        EM_MARKS["y"] := {x : mon2Left + 11*(mon2_width // 12), y : mon2Top + .5*(mon2_height // 6)}
-        EM_MARKS["n"] := {x : mon2Left + 1*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
-        EM_MARKS["e"] := {x : mon2Left + 6*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
-        EM_MARKS["i"] := {x : mon2Left + 11*(mon2_width // 12), y : mon2Top + 3*(mon2_height // 6)}
-        EM_MARKS["h"] := {x : mon2Left + 1*(mon2_width // 12), y : mon2Top + 5.5*(mon2_height // 6)}
-        EM_MARKS[","] := {x : mon2Left + 6*(mon2_width // 12), y : mon2Top + 5.5*(mon2_height // 6)}
-        EM_MARKS["."] := {x : mon2Left + 11*(mon2_width // 12), y : mon2Top + 5.5*(mon2_height // 6)}
+        
+        y_mult = 0.5
+        x_splits := (key_order.Length() // Min(num_monitors, 6)) // 3
+        y_splits := 3
+        Loop, % y_splits {
+            x_mult = 2
+            Loop, % x_splits {
+                EM_MARKS[(key_order[i])] := {x : monLeft + x_mult*(mon_width // (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                x_mult += 4
+                i++
+            }
+            y_mult += 2.5
+        }
     }
 }
-
-; for troubleshooting
-;SysGet, MonitorCount, MonitorCount
-;SysGet, MonitorPrimary, MonitorPrimary
-;MsgBox, Monitor Count:`t%MonitorCount%`nPrimary Monitor:`t%MonitorPrimary%
-;Loop, %MonitorCount%
-;{
-;    SysGet, MonitorName, MonitorName, %A_Index%
-;    SysGet, Monitor, Monitor, %A_Index%
-;    SysGet, MonitorWorkArea, MonitorWorkArea, %A_Index%
-;    MsgBox, Monitor:`t#%A_Index%`nName:`t%MonitorName%`nLeft:`t%MonitorLeft% (%MonitorWorkAreaLeft% work)`nTop:`t%MonitorTop% (%MonitorWorkAreaTop% work)`nRight:`t%MonitorRight% (%MonitorWorkAreaRight% work)`nBottom:`t%MonitorBottom% (%MonitorWorkAreaBottom% work)
-;}
 
 ;; ## Mouse Settings
 ;;
