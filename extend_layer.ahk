@@ -120,7 +120,7 @@ sc028::GoToMark(MARKS)
 ;;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
 
 sc056::^z
-sc02c::^x
+sc02c::^z ; would change to ctrl-x on an iso keyboard
 sc02d::^Ins
 sc02e::LButton
 sc02f::+Ins
@@ -165,12 +165,11 @@ ClearModifiers() {
 
 ;; ### Cursor Marks Functions
 ;;
-; Generate default marks TODO: a loop would be neater. Also need to improve compatibility for different monitor setups (primary on right) requires logic 
+; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens
 GenerateMarks(key_order) {
     global 
     SysGet, num_monitors, MonitorCount
-    local i = 1
-    local j = 1
+    local i = 1 ; counts keys for all monitor marks
     Loop, % Min(num_monitors, 6) {
         local mon_number := A_Index
         EM_MARKS_MON_%mon_number% := {}
@@ -178,29 +177,18 @@ GenerateMarks(key_order) {
         local mon_width := monRight - monLeft
         local mon_height := monBottom - monTop
 
-        EM_MARKS_MON_%A_Index%["q"] := {x : monLeft + 1*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["w"] := {x : monLeft + 3*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["f"] := {x : monLeft + 5*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["a"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["r"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["s"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["x"] := {x : monLeft + 1*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["c"] := {x : monLeft + 3*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["d"] := {x : monLeft + 5*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["l"] := {x : monLeft + 7*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["u"] := {x : monLeft + 9*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["y"] := {x : monLeft + 11*(mon_width // 12), y : monTop + .5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["n"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["e"] := {x : monLeft + 9*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["i"] := {x : monLeft + 11*(mon_width // 12), y : monTop + 3*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["h"] := {x : monLeft + 7*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%[","] := {x : monLeft + 9*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
-        EM_MARKS_MON_%A_Index%["."] := {x : monLeft + 11*(mon_width // 12), y : monTop + 5.5*(mon_height // 6)}
-        
-        y_mult = 0.5
-        x_splits := (key_order.Length() // Min(num_monitors, 6)) // 3
-        y_splits := 3
+        j = 1 ; counts keys for that monitors marks
+        x_splits_mon := key_order.Length() // 3 ; number of splits for that monitors marks ('+mon_number)
+        x_splits := (key_order.Length() // Min(num_monitors, 6)) // 3 ; number of splits for all monitor marks (")
+        y_splits := 3 ; number of y splits
+        y_mult = 0.5 ; changes starting height of marks - lower is higher
         Loop, % y_splits {
+            x_mult_mon = 1
+            Loop, % x_splits_mon {
+                EM_MARKS_MON_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width // (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                x_mult_mon += 2
+                j++
+            }            
             x_mult = 2
             Loop, % x_splits {
                 EM_MARKS[(key_order[i])] := {x : monLeft + x_mult*(mon_width // (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
@@ -248,7 +236,7 @@ GoToMark(array) {
     }
     else {
         MouseGetPos, prev_x, prev_y
-        MouseMove, array[letter].x, array[letter].y
+        MouseMove, array[letter].x, array[letter].y, 0 ; TODO: this can get caught on multiple monitor walls dll call didn't fix
         MARKS["'"] := { x : prev_x, y : prev_y }
     }
     awaiting_input = 0
