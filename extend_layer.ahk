@@ -33,7 +33,7 @@ global awaiting_input = 0
 
 LShift & RShift::CapsLock
 
-CapsLock up:: ; -------------------
+*CapsLock up:: ; -------------------
     SetTimer, MoveCursor, off
     SetTimer, SmoothScrollWheel, off
     ClearModifiers()
@@ -61,12 +61,12 @@ F6::Media_Next
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
 sc029::GoToMark(EM_MARKS)
-;sc002::F1
-;sc003::F2
-;sc004::F3
-;sc005::F4
-;sc006::F5
-;sc007::F6
+sc002::F1
+sc003::F2
+sc004::F3
+sc005::F4
+sc006::F5
+sc007::F6
 ;sc008::
 ;sc009::
 ;sc00a::
@@ -124,8 +124,8 @@ sc02c::^z ; would change to ctrl-x on an iso keyboard
 sc02d::^Ins
 sc02e::LButton
 sc02f::+Ins
-sc030::RButton
-;sc031::
+;sc030::
+sc031::RButton
 sc032::Shift
 sc033::Ctrl
 sc034::Alt
@@ -165,7 +165,7 @@ ClearModifiers() {
 
 ;; ### Cursor Marks Functions
 ;;
-; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens
+; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
 GenerateMarks(key_order) {
     global 
     SysGet, num_monitors, MonitorCount
