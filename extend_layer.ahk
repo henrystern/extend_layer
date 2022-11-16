@@ -67,10 +67,10 @@ sc004::F3
 sc005::F4
 sc006::F5
 sc007::F6
-;sc008::
-;sc009::
-;sc00a::
-;sc00b::
+sc008::F7
+sc009::F8
+sc00a::F9
+sc00b::F10
 sc00c::^w
 sc00d::^t
 
@@ -90,7 +90,7 @@ sc016::Return
 sc017::Return
 +sc017::JumpTopEdge()
 sc018::Return
-;sc019::
+sc019::^Delete
 sc01a::^+Tab
 sc01b::^Tab
 
@@ -121,7 +121,7 @@ sc028::GoToMark(MARKS)
 
 sc056::^z
 sc02c::^z ; would change to ctrl-x on an iso keyboard
-sc02d::^Ins
+sc02d::^Ins ; ins method works better for me in windows terminal for no loss elsewhere
 sc02e::LButton
 sc02f::+Ins
 ;sc030::

@@ -1,3 +1,5 @@
+### Overview
+![Layer Image](https://github.com/henrystern/extend_layer/blob/main/defaults.png?raw=true)
 ### Purpose
 * Inspired by Dreymar's extend layer this script moves keyboard navigation to the left hand and mouse navigation to the right hand. 
 * This configuration provides superior control while the right hand is on the mouse.
