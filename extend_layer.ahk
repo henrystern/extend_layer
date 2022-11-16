@@ -18,7 +18,7 @@ global RESISTANCE := .95 ; limits acceleration and top speed
 global MARKS := {}
 global EM_MARKS := {} ; Easymotion style grid
 
-key_order := ["q", "w", "f", "a", "r", "s", "x", "c", "d", "l", "u", "y", "n", "e", "i", "h", ",", "."] ; alter depending on layout and preference, max 20 items
+key_order := ["q", "w", "f", "a", "r", "s", "x", "c", "d", "l", "u", "y", "n", "e", "i", "h", ",", "."] ; alter depending on layout and preference, max 20 items can appear as tooltips but more can be defined
 GenerateMarks(key_order)
 
 global awaiting_input = 0
@@ -27,8 +27,8 @@ global awaiting_input = 0
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
 
 *CapsLock:: ; -------------------
-    SetTimer, MoveCursor, 10
-    SetTimer, SmoothScrollWheel, 40
+    SetTimer, MoveCursor, 10  ; this will also adjust cursor speed and smoothness
+    SetTimer, SmoothScrollWheel, 40 ; this adjusts scrollwheel speed
     return
 
 LShift & RShift::CapsLock
