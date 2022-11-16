@@ -19,7 +19,8 @@ global MARKS := {}
 global EM_MARKS := {} ; Easymotion style grid
 
 key_order := ["q", "w", "f", "a", "r", "s", "x", "c", "d", "l", "u", "y", "n", "e", "i", "h", ",", "."] ; alter depending on layout and preference, max 20 items can appear as tooltips but more can be defined
-GenerateMarks(key_order)
+y_splits = 4 ; number of horizontal gridlines per monitor
+GenerateMarks(key_order, y_splits)
 
 global awaiting_input = 0
 
@@ -166,11 +167,11 @@ ClearModifiers() {
 ;; ### Cursor Marks Functions
 ;;
 ; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
-GenerateMarks(key_order) {
+GenerateMarks(key_order, y_splits) {
     global 
     SysGet, num_monitors, MonitorCount
     local i = 1 ; counts keys for all monitor marks
-    Loop, % Min(num_monitors, 6) {
+    Loop, % Min(num_monitors, key_order.length() // y_splits) {
         local mon_number := A_Index
         EM_MARKS_MON_%mon_number% := {}
         SysGet, mon, Monitor, %mon_number%
@@ -178,12 +179,11 @@ GenerateMarks(key_order) {
         local mon_height := monBottom - monTop
 
         j = 1 ; counts keys for that monitors marks
-        x_splits_mon := key_order.Length() // 3 ; number of splits for that monitors marks ('+mon_number)
-        x_splits := (key_order.Length() // Min(num_monitors, 6)) // 3 ; number of splits for all monitor marks (")
-        y_splits := 3 ; number of y splits
+        x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
+        x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
         y_mult = 0.5 ; changes starting height of marks - lower is higher
         Loop, % y_splits {
-            x_mult_mon = 1
+            x_mult_mon = 1 ; changes starting x of marks - lower is left
             Loop, % x_splits_mon {
                 EM_MARKS_MON_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width // (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
                 x_mult_mon += 2
@@ -195,8 +195,9 @@ GenerateMarks(key_order) {
                 x_mult += 4
                 i++
             }
-            y_mult += 2.5
+            y_mult += (2*y_splits - 2*.5) // (y_splits - 1)
         }
+
     }
 }
 
