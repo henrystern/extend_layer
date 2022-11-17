@@ -122,9 +122,9 @@ sc028::GoToMark(MARKS)
 
 sc056::^z
 sc02c::^z ; would change to ctrl-x on an iso keyboard
-sc02d::^Ins ; ins method works better for me in windows terminal for no loss elsewhere
+sc02d::^c
 sc02e::LButton
-sc02f::+Ins
+sc02f::^v
 ;sc030::
 sc031::RButton
 sc032::Shift
