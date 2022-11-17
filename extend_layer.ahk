@@ -19,7 +19,7 @@ global MARKS := {}
 global EM_MARKS := {} ; Easymotion style grid
 
 key_order := ["q", "w", "f", "p", "a", "r", "s", "t", "x", "c", "d", "l", "u", "y", "n", "e", "i", "h", ",", "."] ; alter depending on layout and preference, max 20 items can appear as tooltips but more can be defined
-y_splits = 5 ; number of horizontal gridlines per monitor
+y_splits = 4 ; number of horizontal gridlines per monitor
 GenerateMarks(key_order, y_splits)
 
 global awaiting_input = 0
@@ -182,20 +182,20 @@ GenerateMarks(key_order, y_splits) {
         x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
         x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
         y_mult = 0.5 ; changes starting height of marks - lower is higher
-        initial_y_mult := y_mult ; changes starting height of marks - lower is higher
+        initial_y_mult := y_mult 
         Loop, % y_splits {
             x_mult_mon = 1 ; changes starting x of marks - lower is left
             initial_x_mult_mon := x_mult_mon
             Loop, % x_splits_mon {
-                EM_MARKS_MON_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width // (4 * x_splits_mon)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
-                x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) // (x_splits_mon - 1)
+                EM_MARKS_MON_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) / (x_splits_mon - 1)
                 j++
             }            
-            x_mult = 2
+            x_mult = .75
             initial_x_mult := x_mult
             Loop, % x_splits {
-                EM_MARKS[(key_order[i])] := {x : monLeft + x_mult*(mon_width // (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
-                x_mult += (4*x_splits - 2*initial_x_mult) // (x_splits - 1)
+                EM_MARKS[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
                 i++
             }
             y_mult += (2*y_splits - 2*initial_y_mult) // (y_splits - 1)
