@@ -9,14 +9,14 @@ SetMouseDelay, -1
 ;; ## Mouse Settings
 ;;
 
-global acceleration := 5
-global top_speed := 50
+global acceleration := 4
+global top_speed := 22
 
 ;; ## Default Cursor Marks
 ;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
 
-global MARKS := {}
-global EM_MARKS := {} ; Easymotion style grid
+global marks := {}
+global easymotion_marks := {} ; Easymotion style grid
 
 key_order := ["q", "w", "f", "p", "a", "r", "s", "t", "x", "c", "d", "l", "u", "y", "n", "e", "i", "h", ",", "."] ; alter depending on layout and preference, max 20 items can appear as tooltips but more can be defined
 y_splits = 4 ; number of horizontal gridlines per monitor
@@ -61,7 +61,7 @@ F6::Media_Next
 ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
 ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
-sc029::GoToMark(EM_MARKS)
+sc029::GoToMark(easymotion_marks)
 sc002::F1
 sc003::F2
 sc004::F3
@@ -87,8 +87,8 @@ sc012::End
 sc013::Delete
 sc014::Esc
 sc015::PgUp
-sc016::Return
-sc017::Return
+sc016::Return ; change scrollwheel keys in the SmoothScrollWheel function
+sc017::Return ; change mouse keys in the MouseMove function
 sc018::Return
 sc019::^Delete
 sc01a::^+Tab
@@ -108,8 +108,8 @@ sc024::Return
 sc025::Return
 sc026::Return
 sc027::^Backspace
-sc028::GoToMark(MARKS)
-+sc028::GoToMark(EM_MARKS)
+sc028::GoToMark(marks)
++sc028::GoToMark(easymotion_marks)
 ;sc02b::
 
 ;;  ### Row 4 - lower letter row
@@ -117,7 +117,7 @@ sc028::GoToMark(MARKS)
 ;;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
 
 sc056::^z
-sc02c::^z ; would change to ctrl-x on an iso keyboard
+sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
 sc02d::^c
 sc02e::LButton
 sc02f::^v
@@ -167,33 +167,39 @@ GenerateMarks(key_order, y_splits) {
     global 
     SysGet, num_monitors, MonitorCount
     local i = 1 ; counts keys for all monitor marks
+
     Loop, % Min(num_monitors, key_order.length() // y_splits) {
         local mon_number := A_Index
-        EM_MARKS_MON_%mon_number% := {}
+        easymotion_marks_monitor_%mon_number% := {}
         SysGet, mon, Monitor, %mon_number%
         local mon_width := monRight - monLeft
         local mon_height := monBottom - monTop
 
-        j = 1 ; counts keys for that monitors marks
-        x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
-        x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
-        y_mult = 0.5 ; changes starting height of marks - lower is higher
-        initial_y_mult := y_mult 
+        local j = 1 ; counts keys for that monitors marks
+        local x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
+        local x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
+        local y_mult = 0.5 ; changes starting height of marks - lower is higher
+        local initial_y_mult := y_mult 
+
         Loop, % y_splits {
-            x_mult_mon = 1 ; changes starting x of marks - lower is left
-            initial_x_mult_mon := x_mult_mon
+            local x_mult_mon = 1 ; changes starting x of marks - lower is left
+            local initial_x_mult_mon := x_mult_mon
+
             Loop, % x_splits_mon {
-                EM_MARKS_MON_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                easymotion_marks_monitor_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
                 x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) / (x_splits_mon - 1)
                 j++
             }            
-            x_mult = .75
-            initial_x_mult := x_mult
+
+            local x_mult = .75
+            local initial_x_mult := x_mult
+
             Loop, % x_splits {
-                EM_MARKS[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                easymotion_marks[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
                 x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
                 i++
             }
+
             y_mult += (2*y_splits - 2*initial_y_mult) // (y_splits - 1)
         }
 
@@ -203,16 +209,17 @@ GenerateMarks(key_order, y_splits) {
 ;; ## Mouse Settings
 ;;
 
-
-
 ; Associate a key with the current cursor location
 SetMark() {
     ToolTip, set mark
     awaiting_input = 1
     Input, letter, L1
+
     ToolTip, set mark at %letter%
     MouseGetPos, cur_x, cur_y
+
     MARKS[(letter)] := {x:cur_x, y:cur_y}
+
     awaiting_input = 0
     RemoveToolTip(1)
 }
@@ -222,23 +229,28 @@ GoToMark(array) {
     ClearModifiers()
     awaiting_input = 1
     i = 1
+
     For key, value in array{
         if (i == 21) ; tooltip window limit is 20
             Break
         ToolTip, % key, % value.x, % value.y, % i
         i++
     }
+
     Input, letter, L1 E
+
     if (IsNum(letter)) {
         awaiting_input = 0
         RemoveToolTip(i-1)
-        GoToMark(EM_MARKS_MON_%letter%)
+        GoToMark(easymotion_marks_monitor_%letter%)
     }
+
     else {
         MouseGetPos, prev_x, prev_y
         MouseMove, array[letter].x, array[letter].y, 0 ; TODO: this can get caught on multiple monitor walls dll call didn't fix
-        MARKS["'"] := { x : prev_x, y : prev_y }
+        marks["'"] := { x : prev_x, y : prev_y }
     }
+
     awaiting_input = 0
     RemoveToolTip(i-1)
 }
@@ -257,10 +269,10 @@ RemoveToolTip(i) {
 }
 
 ;; ### Mouse Functions
-;; With credit to https://github.com/4strid/mouse-control.autohotkey
+;; inspired by https://github.com/4strid/mouse-control.autohotkey
 
-global VELOCITY_X := 0
-global VELOCITY_Y := 0
+global velocity_x := 0
+global velocity_y := 0
 
 ; Scroll Wheel -function and time is smoother than mapping directly
 SmoothScrollWheel(){
@@ -271,28 +283,25 @@ SmoothScrollWheel(){
 }
 
 Accelerate(velocity, pos, neg) {
-  If (pos + neg == 0) {
-    Return 0
-  }
-  Else {
-    Return velocity * RESISTANCE + FORCE * (pos + neg)
-  }
+    new_velocity := velocity + acceleration * (pos + neg)
+    if (Abs(new_velocity) <= Abs(velocity)) {
+        Return 0
+    }
+    else {
+        Return (pos + neg) * Min(Abs(new_velocity), Abs(top_speed))
+    }
 }
 
 MoveCursor() {
-  UP := 0
-  LEFT := 0
-  DOWN := 0
-  RIGHT := 0
+    up := 0 - GetKeyState("sc017", "P")
+    left := 0 - GetKeyState("sc024", "P")
+    down := 0 + GetKeyState("sc025", "P")
+    right := 0 + GetKeyState("sc026", "P")
   
-  UP := UP - GetKeyState("sc017", "P")
-  LEFT := LEFT - GetKeyState("sc024", "P")
-  DOWN := DOWN + GetKeyState("sc025", "P")
-  RIGHT := RIGHT + GetKeyState("sc026", "P")
-  
-  VELOCITY_X := Accelerate(VELOCITY_X, LEFT, RIGHT)
-  VELOCITY_Y := Accelerate(VELOCITY_Y, UP, DOWN)
+    velocity_x := Accelerate(velocity_x, left, right)
+    velocity_y := Accelerate(velocity_y, up, down)
 
-  RestoreDPI:=DllCall("SetThreadDpiAwarenessContext","ptr",-3,"ptr") ; enable per-monitor DPI awareness
-  MouseMove, %VELOCITY_X%, %VELOCITY_Y%, 0, R
+    RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
+    MouseMove, %velocity_x%, %velocity_y%, 0, R
+    DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
 }
