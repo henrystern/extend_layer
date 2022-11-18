@@ -8,7 +8,6 @@ This layer was designed to overcome two issues I had with existing extend layers
        * Instead this layer uses the right hand for mouse navigation and the left hand for keyboard navigation, so both forms are always available.
   3. Mouse navigation support in existing extend layers feels like an afterthought
       * This script uses smooth mouse and scrollwheel movement rather than discrete jumps giving the user much more fluidity and control
-      * Mouse behaviour can be adjusted with settings for acceleration and top speed
       * The script also uses Vim-style marks that let you instantly jump between cursor locations
 
 ### Setup
@@ -29,5 +28,5 @@ Customization is encouraged and should be self explanatory from the comments and
 
 ### Tips
 * By default CapsLock is remapped to LShift + RShift
-* Monitor Grid Marks can be accessed from both Ext+~ and Ext+Shift+'
-* While awaiting a Mark, pressing any number key will give a grid of marks for the monitor of that number. (1 is the primary monitor)
+* Monitor grid marks can be accessed from both Ext+~ and Ext+Shift+'
+* While awaiting a mark, pressing any number key will give a grid of marks for the monitor of that number.
