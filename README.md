@@ -1,16 +1,17 @@
 ### Overview
 ![Layer Image](https://github.com/henrystern/extend_layer/blob/main/defaults.png?raw=true)
 ### Purpose
-* Inspired by Dreymar's extend layer this script moves keyboard navigation to the left hand and mouse navigation to the right hand. 
-* This configuration provides superior control while the right hand is on the mouse.
-* Other Features:
-  * Vim inspired cursor marks and easymotion
-  * Smooth cursor movement
-  * Smooth mousewheel
+* This script was designed to overcome two issues I had with existing extend layouts:
+  1. Most extend layers rely primarily on the right hand which limits usability when that hand is on the mouse
+    * Instead this layer relys on the right hand for mouse navigation and the left hand for keyboard navigation. So both mouse and keyboard navigation is always available.
+  2. Mouse navigation from the extend layer often feels like an afterthought
+    * This script uses smooth mouse and scrollwheel movement rather than discrete jumps
+    * Mouse behaviour can be adjusted with settings for acceleration and top speed
+    * The user can use Vim-style marks to instantly jump between cursor locations
 
 ### Customization
 * Customization should be self explanatory from the comments and the [AHK keylist](https://www.autohotkey.com/docs/KeyList.htm)
 
 ### Startup
 * Win+r 'shell:startup'
-* Place a shortcut to the script in the startup folder.
+* In the startup folder, place a shortcut to the script (if you have AHK installed) or the .exe (if you don't).
