@@ -9,8 +9,8 @@ SetMouseDelay, -1
 ;; ## Mouse Settings
 ;;
 
-global FORCE := 1.5 ; acceleration
-global RESISTANCE := .95 ; limits acceleration and top speed
+global acceleration := 5
+global top_speed := 50
 
 ;; ## Default Cursor Marks
 ;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
@@ -89,7 +89,6 @@ sc014::Esc
 sc015::PgUp
 sc016::Return
 sc017::Return
-+sc017::JumpTopEdge()
 sc018::Return
 sc019::^Delete
 sc01a::^+Tab
@@ -106,11 +105,8 @@ sc021::Backspace
 sc022::Appskey
 sc023::PgDn
 sc024::Return
-+sc024::JumpLeftEdge()
 sc025::Return
-+sc025::JumpBottomEdge()
 sc026::Return
-+sc026::JumpRightEdge()
 sc027::^Backspace
 sc028::GoToMark(MARKS)
 +sc028::GoToMark(EM_MARKS)
@@ -299,35 +295,4 @@ MoveCursor() {
 
   RestoreDPI:=DllCall("SetThreadDpiAwarenessContext","ptr",-3,"ptr") ; enable per-monitor DPI awareness
   MouseMove, %VELOCITY_X%, %VELOCITY_Y%, 0, R
-}
-
-;TODO these functions only work on the primary monitor should change to get active monitor
-
-MonitorLeftEdge() {
-  MouseGetPos, mx
-  monitor := (mx // A_ScreenWidth)
-
-  return monitor * A_ScreenWidth
-}
-
-JumpLeftEdge() {
-  x := MonitorLeftEdge() + 50
-  MouseGetPos,,y
-  MouseMove, x,y
-}
-
-JumpBottomEdge() {
-  MouseGetPos, x
-  MouseMove, x,(A_ScreenHeight - 50)
-}
-
-JumpTopEdge() {
-  MouseGetPos, x
-  MouseMove, x,20
-}
-
-JumpRightEdge() {
-  x := MonitorLeftEdge() + A_ScreenWidth - 50
-  MouseGetPos,,y
-  MouseMove, x,y
 }
