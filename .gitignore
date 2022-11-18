@@ -1,2 +1,3 @@
 *.exe
-*.ini
+settings.ini
+saved_marks.ini
