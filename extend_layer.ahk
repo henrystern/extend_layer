@@ -126,9 +126,9 @@ sc02e::LButton
 sc02f::^v
 ;sc030::
 sc031::RButton
-sc032::Shift
-sc033::Ctrl
-sc034::Alt
+*sc032::Shift ; * because these modifiers are often combined
+*sc033::Ctrl
+*sc034::Alt
 sc035::SetMark()
 
 ;sc01c::
