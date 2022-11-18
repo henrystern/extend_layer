@@ -9,8 +9,14 @@ SetMouseDelay, -1
 ;; ## Mouse Settings
 ;;
 
+; create globals
 global acceleration := 4
 global top_speed := 22
+
+IniRead, acceleration, settings.ini, MOUSE, acceleration, 4
+IniRead, top_speed, settings.ini, MOUSE, top_speed, 22
+IniRead, mouse_interval, settings.ini, MOUSE, mouse_interval, 10
+IniRead, scroll_interval, settings.ini, MOUSE, scroll_interval, 40
 
 ;; ## Default Cursor Marks
 ;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
@@ -18,8 +24,15 @@ global top_speed := 22
 global marks := {}
 global easymotion_marks := {} ; Easymotion style grid
 
-key_order := ["q", "w", "f", "p", "a", "r", "s", "t", "x", "c", "d", "l", "u", "y", "n", "e", "i", "h", ",", "."] ; alter depending on layout and preference, max 20 items can appear as tooltips but more can be defined
-y_splits = 4 ; number of horizontal gridlines per monitor
+key_order := []
+IniRead, key_order_items, settings.ini, MARK_ORDER, key_order, q|w|e|r|a|s|d|z|x|c|u|i|o|p|j|k|l|m|,|.
+Loop, Parse, key_order_items, |
+{
+    key_order.Push(A_LoopField)
+}
+
+IniRead, y_splits, settings.ini, MARK_SETTINGS, y_splits, 4
+
 GenerateMarks(key_order, y_splits)
 
 global awaiting_input = 0
@@ -28,8 +41,8 @@ global awaiting_input = 0
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
 
 *CapsLock:: ; -------------------
-    SetTimer, MoveCursor, 10  ; this will also adjust cursor speed and smoothness
-    SetTimer, SmoothScrollWheel, 40 ; this adjusts scrollwheel speed
+    SetTimer, MoveCursor, %mouse_interval% ; this will also adjust cursor speed and smoothness
+    SetTimer, SmoothScrollWheel, %scroll_interval% ; this adjusts scrollwheel speed
     return
 
 LShift & RShift::CapsLock
