@@ -1,7 +1,7 @@
 ### Overview
 ![Layer Image](https://github.com/henrystern/extend_layer/blob/main/defaults.png?raw=true)
 ### Purpose
-This script gives the user complete navigation control from the home position by remapping the CapsLock key to function as a modifier (by default CapsLock is remapped to LShift + RShift).
+This script gives the user complete navigation control from the home position by remapping the CapsLock key to function as a modifier.
 
 This layer was designed to overcome two issues I had with existing extend layers:
   1. Most extend layers rely primarily on the right hand which limits control when that hand is on the mouse
@@ -26,3 +26,8 @@ Otherwise:
 
 ### Customization
 Customization is encouraged and should be self explanatory from the comments and the [AHK keylist](https://www.autohotkey.com/docs/KeyList.htm)
+
+### Tips
+* By default CapsLock is remapped to LShift + RShift
+* Monitor Grid Marks can be accessed from both Ext+~ and Ext+Shift+'
+* While awaiting a Mark, pressing any number key will give a grid of marks for the monitor of that number. (1 is the primary monitor)
