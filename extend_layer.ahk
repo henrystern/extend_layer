@@ -9,43 +9,33 @@ SetMouseDelay, -1
 ;; ## Mouse Settings
 ;;
 
-; create globals
-global acceleration := 4
-global top_speed := 22
+global mouse_settings := ReadMouseSettings()
 
-IniRead, acceleration, settings.ini, MOUSE, acceleration, 4
-IniRead, top_speed, settings.ini, MOUSE, top_speed, 22
-IniRead, mouse_interval, settings.ini, MOUSE, mouse_interval, 10
-IniRead, scroll_interval, settings.ini, MOUSE, scroll_interval, 40
+;; ## Cursor Marks
+;;
 
-;; ## Default Cursor Marks
-;; TODO: easier way for users to save cursor locations between sessions probably read and write to file
+; restore saved marks
+global marks := RestoreMarks()
 
-global marks := {}
+; read mark settings
+mark_settings := ReadMarkSettings()
+key_order := ReadKeyOrder()
+
+; generate mark grids
 global easymotion_marks := {} ; Easymotion style grid
-
-key_order := []
-IniRead, key_order_items, settings.ini, MARK_ORDER, key_order, q|w|e|r|a|s|d|z|x|c|u|i|o|p|j|k|l|m|,|.
-Loop, Parse, key_order_items, |
-{
-    key_order.Push(A_LoopField)
-}
-
-IniRead, y_splits, settings.ini, MARK_SETTINGS, y_splits, 4
-
-GenerateMarks(key_order, y_splits)
-
-global awaiting_input = 0
+GenerateMarks(key_order, mark_settings.y_splits)
 
 ;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
 
-*CapsLock:: ; -------------------
-    SetTimer, MoveCursor, %mouse_interval% ; this will also adjust cursor speed and smoothness
-    SetTimer, SmoothScrollWheel, %scroll_interval% ; this adjusts scrollwheel speed
-    return
+global awaiting_input = 0 ; used to disable hotkeys while setting or going to mark
 
 LShift & RShift::CapsLock
+
+*CapsLock:: ; -------------------
+    SetTimer, MoveCursor, % mouse_settings.mouse_interval
+    SetTimer, SmoothScrollWheel, % mouse_settings.scroll_interval
+    return
 
 *CapsLock up:: ; -------------------
     SetTimer, MoveCursor, off
@@ -177,7 +167,7 @@ ClearModifiers() {
 ;;
 ; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
 GenerateMarks(key_order, y_splits) {
-    global 
+    global
     SysGet, num_monitors, MonitorCount
     local i = 1 ; counts keys for all monitor marks
 
@@ -192,7 +182,7 @@ GenerateMarks(key_order, y_splits) {
         local x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
         local x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
         local y_mult = 0.5 ; changes starting height of marks - lower is higher
-        local initial_y_mult := y_mult 
+        local initial_y_mult := y_mult
 
         Loop, % y_splits {
             local x_mult_mon = 1 ; changes starting x of marks - lower is left
@@ -202,7 +192,7 @@ GenerateMarks(key_order, y_splits) {
                 easymotion_marks_monitor_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
                 x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) / (x_splits_mon - 1)
                 j++
-            }            
+            }
 
             local x_mult = .75
             local initial_x_mult := x_mult
@@ -226,7 +216,7 @@ GenerateMarks(key_order, y_splits) {
 SetMark() {
     ToolTip, set mark
     awaiting_input = 1
-    Input, letter, L1
+    Input, letter, L1, {esc}
 
     ToolTip, set mark at %letter%
     MouseGetPos, cur_x, cur_y
@@ -235,6 +225,7 @@ SetMark() {
 
     awaiting_input = 0
     RemoveToolTip(1)
+    IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
 }
 
 ; Move cursor to mark location
@@ -250,7 +241,7 @@ GoToMark(array) {
         i++
     }
 
-    Input, letter, L1 E
+    Input, letter, L1 E, {esc}
 
     if (IsNum(letter)) {
         awaiting_input = 0
@@ -304,12 +295,12 @@ SmoothScrollWheel(){
 }
 
 Accelerate(velocity, pos, neg) {
-    new_velocity := velocity + acceleration * (pos + neg)
+    new_velocity := velocity + mouse_settings.acceleration * (pos + neg)
     if (Abs(new_velocity) <= Abs(velocity)) {
         return 0
     }
     else {
-        return (pos + neg) * Min(Abs(new_velocity), Abs(top_speed))
+        return (pos + neg) * Min(Abs(new_velocity), Abs(mouse_settings.top_speed))
     }
 }
 
@@ -318,11 +309,59 @@ MoveCursor() {
     left := 0 - GetKeyState("sc024", "P")
     down := 0 + GetKeyState("sc025", "P")
     right := 0 + GetKeyState("sc026", "P")
-  
+
     velocity_x := Accelerate(velocity_x, left, right)
     velocity_y := Accelerate(velocity_y, up, down)
 
     RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
     MouseMove, %velocity_x%, %velocity_y%, 0, R
     DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
+}
+
+;; ### Settings functions
+;;
+
+ReadMouseSettings() {
+    IniRead, raw_mouse_settings, settings.ini, MOUSE, , acceleration=4`ntop_speed=22`nmouse_interval=10`nscroll_interval=40
+    mouse_settings := {}
+    Loop, Parse, raw_mouse_settings, "`n"
+    {
+        Array := StrSplit(A_LoopField, "=")
+        mouse_settings[Array[1]] := Array[2]
+    }
+    return mouse_settings
+}
+
+ReadKeyOrder() {
+    IniRead, raw_key_order, settings.ini, MARK_ORDER, key_order , q|w|e|r|a|s|d|z|x|c|u|i|o|p|j|k|l|m|,|.
+    key_order := []
+    Loop, Parse, raw_key_order, |
+    {
+        key_order.Push(A_LoopField)
+    }
+    return key_order
+
+}
+
+ReadMarkSettings() {
+    IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS, , y_splits=4`n
+    mark_settings := {}
+    Loop, Parse, raw_mark_settings, "`n"
+    {
+        Array := StrSplit(A_LoopField, "=")
+        mark_settings[Array[1]] := Array[2]
+    }
+    return mark_settings
+}
+
+RestoreMarks() {
+    IniRead, saved_marks, saved_marks.ini, MARKS
+    marks := {}
+    Loop, Parse, saved_marks, "`n"
+    {
+        Array := StrSplit(A_LoopField, "=")
+        coords := StrSplit(Array[2], "|")
+        marks[Array[1]] := {x:coords[1], y:coords[2]}
+    }
+    return marks
 }
