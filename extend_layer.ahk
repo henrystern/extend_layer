@@ -232,7 +232,7 @@ GoToMark(array) {
 
     For key, value in array{
         if (i == 21) ; tooltip window limit is 20
-            Break
+            break
         ToolTip, % key, % value.x, % value.y, % i
         i++
     }
@@ -247,8 +247,16 @@ GoToMark(array) {
 
     else {
         MouseGetPos, prev_x, prev_y
-        MouseMove, array[letter].x, array[letter].y, 0 ; TODO: this can get caught on multiple monitor walls dll call didn't fix
-        marks["'"] := { x : prev_x, y : prev_y }
+        original_x := prev_x
+        original_y := prev_y
+        While (prev_x != array[letter].x or prev_y != array[letter].y) { ; looping brute forces through monitor walls without having to compare monitor dimensions
+            MouseMove, array[letter].x, array[letter].y, 0
+            MouseGetPos, prev_x, prev_y
+            if (A_Index == 15) {
+                break ; in case display settings have changed since marks were generated
+            }
+        }
+        marks["'"] := { x : original_x, y : original_y}
     }
 
     awaiting_input = 0
@@ -285,10 +293,10 @@ SmoothScrollWheel(){
 Accelerate(velocity, pos, neg) {
     new_velocity := velocity + acceleration * (pos + neg)
     if (Abs(new_velocity) <= Abs(velocity)) {
-        Return 0
+        return 0
     }
     else {
-        Return (pos + neg) * Min(Abs(new_velocity), Abs(top_speed))
+        return (pos + neg) * Min(Abs(new_velocity), Abs(top_speed))
     }
 }
 
