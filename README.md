@@ -1,14 +1,14 @@
 ### Overview
 ![Layer Image](https://github.com/henrystern/extend_layer/blob/main/defaults.png?raw=true)
 ### Purpose
-This script gives the user complete navigation control from the home position by remapping the CapsLock key to function as a modifier.
+This script repurposes the wasted Capslock key and gives you complete navigation control without ever having to reach for the arrow keys or mouse.
 
-This layer was designed to overcome two issues I had with existing extend layers:
-  1. Most extend layers rely primarily on the right hand which limits control when that hand is on the mouse
-       * Instead this layer uses the right hand for mouse navigation and the left hand for keyboard navigation, so both forms are always available.
-  3. Mouse navigation support in existing extend layers feels like an afterthought
-      * This script uses smooth mouse and scrollwheel movement rather than discrete jumps giving the user much more fluidity and control
-      * The script also uses Vim-style marks that let you instantly jump between cursor locations
+Features:
+  * Intuitive and balanced layout
+  * Smooth mouse and scrollwheel
+  * Vim style marks for cursor locations
+  * Easymotion inspired grid of cursor marks
+  * Customizable cursor speed and acceleration
 
 ### Setup
 If you have AHK installed:
@@ -16,7 +16,8 @@ If you have AHK installed:
   * Run extend_layer.ahk
 
 Otherwise:
-  * Download [Latest Release](https://github.com/henrystern/extend_layer/releases/latest)
+  * Clone repository
+  * Download [Latest Release](https://github.com/henrystern/extend_layer/releases/latest) and place in repository folder
   * Run extend_layer.exe
 
 ### Run on Startup
@@ -29,4 +30,4 @@ Customization is encouraged and should be self explanatory from the comments and
 ### Tips
 * By default CapsLock is remapped to LShift + RShift
 * Monitor grid marks can be accessed from both Ext+~ and Ext+Shift+'
-* While awaiting a mark, pressing any number key will give a grid of marks for the monitor of that number.
+* While waiting for a mark, pressing any number key will give a grid of marks for the monitor of that number.
