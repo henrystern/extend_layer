@@ -31,3 +31,4 @@ Customization is encouraged and should be self explanatory from the comments and
 * By default CapsLock is remapped to LShift + RShift
 * Monitor grid marks can be accessed from both Ext+~ and Ext+Shift+'
 * While waiting for a mark, pressing any number key will give a grid of marks for the monitor of that number.
+* If you notice underlying key presses slipping through, especially on rapid or combined keypresses, you can try changing USB ports, using a PS/2 adapter, or reducing mouse intervals
