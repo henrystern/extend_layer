@@ -3,7 +3,7 @@
 ### Purpose
 This script makes the CapsLock key the most useful key on the keyboard, by repurposing it as the gateway to complete navigation and mouse control.
 
-Features:
+### Features
   * Intuitive and balanced layout
   * Smooth and configurable mouse movement
   * Vim style marks for cursor locations
@@ -19,7 +19,7 @@ Features:
 * In the startup folder, place a shortcut to the script or .exe (depending on if you have AHK installed).
 
 ### Customization
-Customization is encouraged and should be self explanatory from the comments and the [AHK keylist](https://www.autohotkey.com/docs/KeyList.htm)
+* Customization is encouraged and should be self explanatory from the comments and the [AHK keylist](https://www.autohotkey.com/docs/KeyList.htm)
 
 ### Tips
 * By default CapsLock is remapped to LShift + RShift
