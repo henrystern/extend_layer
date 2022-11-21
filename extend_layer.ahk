@@ -210,15 +210,17 @@ SetMark() {
     awaiting_input = 1
     Input, letter, L1, {esc}
 
-    ToolTip, set mark at %letter%
-    MouseGetPos, cur_x, cur_y
+    if (letter) {
+        ToolTip, set mark at %letter%
+        MouseGetPos, cur_x, cur_y
 
-    MARKS[(letter)] := {x:cur_x, y:cur_y}
+        MARKS[(letter)] := {x:cur_x, y:cur_y}
+        IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
     
-    sleep, 100
-    awaiting_input = 0
+        sleep, 100
+        awaiting_input = 0
+    }
     RemoveToolTip(1)
-    IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
 }
 
 ; Move cursor to mark location
