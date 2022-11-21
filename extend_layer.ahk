@@ -214,7 +214,8 @@ SetMark() {
     MouseGetPos, cur_x, cur_y
 
     MARKS[(letter)] := {x:cur_x, y:cur_y}
-
+    
+    sleep, 100
     awaiting_input = 0
     RemoveToolTip(1)
     IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
@@ -256,6 +257,7 @@ GoToMark(array) {
     }
 
     awaiting_input = 0
+    sleep, 200
     RemoveToolTip(i-1)
 }
 
@@ -281,16 +283,20 @@ global velocity_y := 0
 
 ; Scroll Wheel -function and time is smoother than mapping directly
 SmoothScrollWheel(){
-    if GetKeyState("sc016", "P")
+    if (awaiting_input == 1)
+        return
+    else if GetKeyState("sc016", "P") {
         if GetKeyState("Shift", "P")
             send {WheelLeft}
         else
             send {WheelUp}
-    else if GetKeyState("sc018", "P")
+    }
+    else if GetKeyState("sc018", "P") {
         if GetKeyState("Shift", "P")
             send {WheelRight}
         else
             send {WheelDown}
+    }
 }
 
 Accelerate(velocity, pos, neg) {
@@ -304,6 +310,9 @@ Accelerate(velocity, pos, neg) {
 }
 
 MoveCursor() {
+    if (awaiting_input == 1)
+        return
+
     up := 0 - GetKeyState("sc017", "P")
     left := 0 - GetKeyState("sc024", "P")
     down := 0 + GetKeyState("sc025", "P")
