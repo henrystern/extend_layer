@@ -217,7 +217,7 @@ SetMark() {
         MARKS[(letter)] := {x:cur_x, y:cur_y}
         IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
     
-        sleep, 100
+        sleep, 200
         awaiting_input = 0
     }
     RemoveToolTip(1)
@@ -258,8 +258,8 @@ GoToMark(array) {
         marks["'"] := { x : original_x, y : original_y}
     }
 
-    awaiting_input = 0
     sleep, 200
+    awaiting_input = 0
     RemoveToolTip(i-1)
 }
 
