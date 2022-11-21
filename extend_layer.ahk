@@ -218,8 +218,8 @@ SetMark() {
         IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
     
         sleep, 150
-        awaiting_input = 0
     }
+    awaiting_input = 0
     RemoveToolTip(1)
 }
 
