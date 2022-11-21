@@ -338,6 +338,9 @@ ReadMouseSettings() {
         Array := StrSplit(A_LoopField, "=")
         mouse_settings[Array[1]] := Array[2]
     }
+    ; normalize acceleration and top_speed for mouse_interval - TODO this didn't work very well
+    ; mouse_settings["acceleration"] := mouse_settings["acceleration"] // (1000 / mouse_settings["mouse_interval"])
+    ; mouse_settings["top_speed"] := mouse_settings["top_speed"] // (1000 / mouse_settings["mouse_interval"])
     return mouse_settings
 }
 
