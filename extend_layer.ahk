@@ -11,6 +11,7 @@ Process, Priority,, H
 ;; ## Read Settings and Restore Marks
 ;;
 
+DetectSettingsFile()
 global mouse_settings := ReadMouseSettings()
 global marks := RestoreMarks()
 global easymotion_marks := {} ; Easymotion style grid
@@ -319,8 +320,18 @@ MoveCursor() {
 ;; ### Settings functions
 ;;
 
+DetectSettingsFile() {
+    if not FileExist("settings.ini") {
+        FileCopy, example_settings.ini, settings.ini, 0
+        msgbox, 4,, A default settings file has been created.`n`nWould you like to change the default settings?
+        IfMsgBox Yes
+            Run, open "settings.ini"
+    }
+    return
+}
+
 ReadMouseSettings() {
-    IniRead, raw_mouse_settings, settings.ini, MOUSE, , acceleration=4`ntop_speed=22`nmouse_interval=10`nscroll_interval=40
+    IniRead, raw_mouse_settings, settings.ini, MOUSE
     mouse_settings := {}
     Loop, Parse, raw_mouse_settings, "`n"
     {
@@ -342,7 +353,7 @@ ReadKeyOrder() {
 }
 
 ReadMarkSettings() {
-    IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS, , y_splits=4`n
+    IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS
     mark_settings := {}
     Loop, Parse, raw_mark_settings, "`n"
     {
