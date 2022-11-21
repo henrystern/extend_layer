@@ -1,5 +1,6 @@
 ﻿#NoEnv
 #installkeybdhook
+#MaxHotkeysPerInterval 200
 SendMode Input
 SetWorkingDir %A_ScriptDir%
 CoordMode, Mouse, Screen
@@ -7,23 +8,14 @@ CoordMode, ToolTip, Screen
 SetMouseDelay, -1
 Process, Priority,, H
 
-;; ## Mouse Settings
+;; ## Read Settings and Restore Marks
 ;;
 
 global mouse_settings := ReadMouseSettings()
-
-;; ## Cursor Marks
-;;
-
-; restore saved marks
 global marks := RestoreMarks()
-
-; read mark settings
+global easymotion_marks := {} ; Easymotion style grid
 mark_settings := ReadMarkSettings()
 key_order := ReadKeyOrder()
-
-; generate mark grids
-global easymotion_marks := {} ; Easymotion style grid
 GenerateMarks(key_order, mark_settings.y_splits)
 
 ;; ## Mappings
@@ -167,6 +159,7 @@ ClearModifiers() {
 ;; ### Cursor Marks Functions
 ;;
 ; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
+; TODO reduce complexity and eliminate reliance on globals
 GenerateMarks(key_order, y_splits) {
     global
     SysGet, num_monitors, MonitorCount
@@ -209,9 +202,6 @@ GenerateMarks(key_order, y_splits) {
 
     }
 }
-
-;; ## Mouse Settings
-;;
 
 ; Associate a key with the current cursor location
 SetMark() {
@@ -283,6 +273,7 @@ RemoveToolTip(i) {
 
 ;; ### Mouse Functions
 ;; inspired by https://github.com/4strid/mouse-control.autohotkey
+;; these would probably be better as a class
 
 global velocity_x := 0
 global velocity_y := 0
@@ -290,9 +281,15 @@ global velocity_y := 0
 ; Scroll Wheel -function and time is smoother than mapping directly
 SmoothScrollWheel(){
     if GetKeyState("sc016", "P")
-        send {WheelUp}
+        if GetKeyState("Shift", "P")
+            send {WheelLeft}
+        else
+            send {WheelUp}
     else if GetKeyState("sc018", "P")
-        send {WheelDown}
+        if GetKeyState("Shift", "P")
+            send {WheelRight}
+        else
+            send {WheelDown}
 }
 
 Accelerate(velocity, pos, neg) {
