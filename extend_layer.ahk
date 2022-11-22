@@ -15,9 +15,9 @@ DetectSettingsFile()
 global mouse_settings := ReadMouseSettings()
 global marks := RestoreMarks()
 global easymotion_marks := {} ; Easymotion style grid
-mark_settings := ReadMarkSettings()
+global mark_settings := ReadMarkSettings()
 key_order := ReadKeyOrder()
-GenerateMarks(key_order, mark_settings.y_splits)
+GenerateMarks(key_order)
 
 ;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
@@ -161,10 +161,11 @@ ClearModifiers() {
 ;;
 ; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
 ; TODO reduce complexity and eliminate reliance on globals
-GenerateMarks(key_order, y_splits) {
+GenerateMarks(key_order) {
     global
     SysGet, num_monitors, MonitorCount
     local i = 1 ; counts keys for all monitor marks
+    local y_splits := mark_settings.y_splits
 
     Loop, % Min(num_monitors, key_order.length() // y_splits) {
         local mon_number := A_Index
@@ -176,29 +177,29 @@ GenerateMarks(key_order, y_splits) {
         local j = 1 ; counts keys for that monitors marks
         local x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
         local x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
-        local y_mult = 0.5 ; changes starting height of marks - lower is higher
+        local y_mult = mark_settings.y_mult ; changes starting height of marks - lower is higher
         local initial_y_mult := y_mult
 
         Loop, % y_splits {
-            local x_mult_mon = 1 ; changes starting x of marks - lower is left
+            local x_mult_mon = mark_settings.x_mult_mon ; changes starting x of marks - lower is left
             local initial_x_mult_mon := x_mult_mon
 
             Loop, % x_splits_mon {
-                easymotion_marks_monitor_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                easymotion_marks_monitor_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
                 x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) / (x_splits_mon - 1)
                 j++
             }
 
-            local x_mult = .75
+            local x_mult = mark_settings.x_mult
             local initial_x_mult := x_mult
 
             Loop, % x_splits {
-                easymotion_marks[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height // (2 * y_splits))}
+                easymotion_marks[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
                 x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
                 i++
             }
 
-            y_mult += (2*y_splits - 2*initial_y_mult) // (y_splits - 1)
+            y_mult += (2*y_splits - 2*initial_y_mult) / (y_splits - 1)
         }
 
     }
@@ -217,7 +218,7 @@ SetMark() {
         MARKS[(letter)] := {x:cur_x, y:cur_y}
         IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
     
-        sleep, 150
+        sleep, mark_settings.mark_move_delay
     }
     awaiting_input = 0
     RemoveToolTip(1)
@@ -258,7 +259,7 @@ GoToMark(array) {
         marks["'"] := { x : original_x, y : original_y}
     }
 
-    sleep, 125
+    sleep, mark_settings.mark_move_delay
     awaiting_input = 0
     RemoveToolTip(i-1)
 }
@@ -342,7 +343,7 @@ DetectSettingsFile() {
 }
 
 ReadMouseSettings() {
-    IniRead, raw_mouse_settings, settings.ini, MOUSE
+    IniRead, raw_mouse_settings, settings.ini, MOUSE_SETTINGS
     mouse_settings := {}
     Loop, Parse, raw_mouse_settings, "`n"
     {
