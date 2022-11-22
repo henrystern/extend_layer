@@ -335,9 +335,17 @@ MoveCursor() {
 DetectSettingsFile() {
     if not FileExist("settings.ini") {
         FileCopy, example_settings.ini, settings.ini, 0
-        msgbox, 4,, A default settings file has been created.`n`nWould you like to change the default settings?
+        MsgBox, 4,, A default settings file has been created.`n`nWould you like to change the default settings?
+        
+        IfMsgBox No
+            return
+
+        Run, open "settings.ini"
+        WinWait, settings.ini
+        WinWaitClose
+        MsgBox, 4,, Reload extend_layer.ahk?
         IfMsgBox Yes
-            Run, open "settings.ini"
+            Reload
     }
     return
 }
