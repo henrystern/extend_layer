@@ -16,8 +16,8 @@ global mouse_settings := ReadMouseSettings()
 global marks := RestoreMarks()
 global easymotion_marks := {} ; Easymotion style grid
 global mark_settings := ReadMarkSettings()
-key_order := ReadKeyOrder()
-GenerateMarks(key_order)
+global key_order := ReadKeyOrder()
+GenerateMarks()
 
 ;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
@@ -116,10 +116,20 @@ sc028::GoToMark(marks)
 sc056::^z
 sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
 sc02d::^c
-sc02e::LButton
+sc02e::
+    AutoMark()
+    send {LButton Down}
+    KeyWait sc02e
+    send {LButton Up}
+    Return
 sc02f::^v
 ;sc030::
-sc031::RButton
+sc031::
+    AutoMark()
+    send {RButton Down}
+    KeyWait sc031
+    send {RButton Up}
+    Return
 sc032::Shift ; * because these modifiers are often combined
 sc033::Ctrl
 sc034::Alt
@@ -161,7 +171,7 @@ ClearModifiers() {
 ;;
 ; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
 ; TODO reduce complexity and eliminate reliance on globals
-GenerateMarks(key_order) {
+GenerateMarks() {
     global
     SysGet, num_monitors, MonitorCount
     local i = 1 ; counts keys for all monitor marks
@@ -327,6 +337,18 @@ MoveCursor() {
     RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
     MouseMove, %velocity_x%, %velocity_y%, 0, R
     DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
+}
+
+AutoMark() {
+    if (mouse_settings.auto_mark == 1) {
+        For index, key in key_order {
+            if not marks.haskey(key) {
+                MouseGetPos, cur_x, cur_y
+                marks[key] := {x:cur_x, y:cur_y}
+                break
+            }
+        }
+    }
 }
 
 ;; ### Settings functions
