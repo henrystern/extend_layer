@@ -233,7 +233,7 @@ GoToMark(array) {
     For key, value in array{
         if (i == 21) ; tooltip window limit is 20
             break
-        ToolTip, % key, % value.x, % value.y, % i
+        ToolTip, % key, % value.x - 7, % value.y - 7, % i ; -7 necessary because tooltip aligns at top left TODO check if the adjustment should be different for other resolutions (accessibility settings?)
         i++
     }
 
