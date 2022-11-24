@@ -118,7 +118,7 @@ sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
 sc02d::^c
 *sc02e::
     Click, left, down
-    KeyWait sc02e
+    KeyWait % SubStr(A_ThisHotkey, 2) ; substr is slightly annoying but necessary to escape the * modifier
     Click, left, up
     AutoMark()
     Return
@@ -220,7 +220,7 @@ SetMark() {
         ToolTip, set mark at %letter%
         MouseGetPos, cur_x, cur_y
 
-        MARKS[(letter)] := {x:cur_x, y:cur_y, priority:100}
+        MARKS[(letter)] := {x:cur_x, y:cur_y, priority:100, time_set:A_TickCount}
         IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
     
         sleep, mark_settings.mark_move_delay
@@ -348,16 +348,18 @@ AutoMark() {
         min_priority = 99 ; set to never overwrite saved marks which start at 100
         For index, key in key_order {
             if not marks.haskey(key) { ; use unused marks first
-                marks[key] := {x:cur_x, y:cur_y, priority:0}
+                marks[key] := {x:cur_x, y:cur_y, priority:0, time_set:A_TickCount}
                 return
             }
             if (marks[key].priority <= min_priority) {
-                lowest_priority := key
+                if (marks[key].priority != min_priority or marks[key].time_set < marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
+                    lowest_priority := key
+                }
                 min_priority := marks[key].priority
             }
         }
         if lowest_priority {
-            marks[lowest_priority] := {x:cur_x, y:cur_y, priority:0}
+            marks[lowest_priority] := {x:cur_x, y:cur_y, priority:0, time_set:A_TickCount}
         }
     }
 }
@@ -426,7 +428,7 @@ RestoreMarks() {
     {
         Array := StrSplit(A_LoopField, "=")
         coords := StrSplit(Array[2], "|")
-        marks[Array[1]] := {x:coords[1], y:coords[2], priority:100}
+        marks[Array[1]] := {x:coords[1], y:coords[2], priority:100, time_set:0}
     }
     return marks
 }
