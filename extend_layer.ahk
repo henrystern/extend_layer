@@ -358,8 +358,8 @@ AutoMark(mark_priority := 0, user_set := 0) {
     min_priority = 1000 ; arbitrary high number to start
     For index, key in key_order {
         if not marks.haskey(key) { ; use unused marks first
-            marks[key] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
-            return
+            lowest_priority := key
+            break
         }
         if (marks[key].priority <= min_priority) {
             if (marks[key].priority != min_priority or marks[key].time_set < marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
