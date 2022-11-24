@@ -137,6 +137,7 @@ sc035::
     else {
         SetMark(mark_settings.mark_priority)
     }
+    return
 
 ;sc01c::
 sc039::Enter
