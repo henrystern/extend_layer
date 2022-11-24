@@ -120,7 +120,9 @@ sc02d::^c
     Click, left, down
     KeyWait % SubStr(A_ThisHotkey, 2) ; substr is slightly annoying but necessary to escape the * modifier
     Click, left, up
-    AutoMark()
+    if (A_TimeSinceThisHotkey < 300 and mark_settings.auto_mark == 1) { ; users probably don't want to mark the endpoint of long clicks
+        AutoMark()
+    }
     Return
 sc02f::^v
 ;sc030::
@@ -128,7 +130,13 @@ sc031::RButton
 sc032::Shift ; * because these modifiers are often combined
 sc033::Ctrl
 sc034::Alt
-sc035::SetMark()
+sc035::
+    if (mark_settings.auto_assign_mark == 1) {
+        AutoMark(mark_settings.mark_priority)
+    }
+    else {
+        SetMark(mark_settings.mark_priority)
+    }
 
 ;sc01c::
 sc039::Enter
@@ -211,7 +219,7 @@ GenerateMarks() {
 }
 
 ; Associate a key with the current cursor location
-SetMark() {
+SetMark(mark_priority := 0) {
     ToolTip, set mark
     ClearModifiers()
     awaiting_input = 1
@@ -221,7 +229,7 @@ SetMark() {
         ToolTip, set mark at %letter%
         MouseGetPos, cur_x, cur_y
 
-        MARKS[(letter)] := {x:cur_x, y:cur_y, priority:100, time_set:A_TickCount}
+        MARKS[(letter)] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
         IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
     
         sleep, mark_settings.mark_move_delay
@@ -336,32 +344,35 @@ MoveCursor() {
     DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
 }
 
-AutoMark() {
-    if (mouse_settings.auto_mark == 1) {
-        ; check if there is a similar mark already
-        MouseGetPos, cur_x, cur_y
-        For key, value in marks {
-            if (abs(cur_x - value.x) < 50 and abs(cur_y - value.y) < 50) {
+AutoMark(mark_priority := 0) {
+    ; check if there is a similar mark already
+    MouseGetPos, cur_x, cur_y
+    For key, value in marks {
+        if (abs(cur_x - value.x) < 50 and abs(cur_y - value.y) < 50) { ; if the approximate location is already marked then return
+            if (key != "'") {
                 return
             }
+            else {
+                msgbox '
+            }
         }
+    }
 
-        min_priority = 99 ; set to never overwrite saved marks which start at 100
-        For index, key in key_order {
-            if not marks.haskey(key) { ; use unused marks first
-                marks[key] := {x:cur_x, y:cur_y, priority:0, time_set:A_TickCount}
-                return
-            }
-            if (marks[key].priority <= min_priority) {
-                if (marks[key].priority != min_priority or marks[key].time_set < marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
-                    lowest_priority := key
-                }
-                min_priority := marks[key].priority
-            }
+    min_priority = 99 ; set to never overwrite saved marks which start at 100
+    For index, key in key_order {
+        if not marks.haskey(key) { ; use unused marks first
+            marks[key] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
+            return
         }
-        if lowest_priority {
-            marks[lowest_priority] := {x:cur_x, y:cur_y, priority:0, time_set:A_TickCount}
+        if (marks[key].priority <= min_priority) {
+            if (marks[key].priority != min_priority or marks[key].time_set < marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
+                lowest_priority := key
+            }
+            min_priority := marks[key].priority
         }
+    }
+    if lowest_priority {
+        marks[lowest_priority] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
     }
 }
 
