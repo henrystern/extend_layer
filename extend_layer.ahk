@@ -116,20 +116,15 @@ sc028::GoToMark(marks)
 sc056::^z
 sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
 sc02d::^c
-sc02e::
+*sc02e::
     AutoMark()
-    send {LButton Down}
+    Click, left, down
     KeyWait sc02e
-    send {LButton Up}
+    Click, left, up
     Return
 sc02f::^v
 ;sc030::
-sc031::
-    AutoMark()
-    send {RButton Down}
-    KeyWait sc031
-    send {RButton Up}
-    Return
+sc031::RButton
 sc032::Shift ; * because these modifiers are often combined
 sc033::Ctrl
 sc034::Alt
