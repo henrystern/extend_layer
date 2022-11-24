@@ -117,10 +117,10 @@ sc056::^z
 sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
 sc02d::^c
 *sc02e::
-    AutoMark()
     Click, left, down
     KeyWait sc02e
     Click, left, up
+    AutoMark()
     Return
 sc02f::^v
 ;sc030::
@@ -220,7 +220,7 @@ SetMark() {
         ToolTip, set mark at %letter%
         MouseGetPos, cur_x, cur_y
 
-        MARKS[(letter)] := {x:cur_x, y:cur_y}
+        MARKS[(letter)] := {x:cur_x, y:cur_y, priority:100}
         IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
     
         sleep, mark_settings.mark_move_delay
@@ -261,6 +261,7 @@ GoToMark(array) {
                 break ; in case display settings have changed since marks were generated
             }
         }
+        array[letter].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
         marks["'"] := { x : original_x, y : original_y}
     }
 
@@ -336,12 +337,27 @@ MoveCursor() {
 
 AutoMark() {
     if (mouse_settings.auto_mark == 1) {
-        For index, key in key_order {
-            if not marks.haskey(key) {
-                MouseGetPos, cur_x, cur_y
-                marks[key] := {x:cur_x, y:cur_y}
-                break
+        ; check if there is a similar mark already
+        MouseGetPos, cur_x, cur_y
+        For key, value in marks {
+            if (abs(cur_x - value.x) < 50 and abs(cur_y - value.y) < 50) {
+                return
             }
+        }
+
+        min_priority = 99 ; set to never overwrite saved marks which start at 100
+        For index, key in key_order {
+            if not marks.haskey(key) { ; use unused marks first
+                marks[key] := {x:cur_x, y:cur_y, priority:0}
+                return
+            }
+            if (marks[key].priority <= min_priority) {
+                lowest_priority := key
+                min_priority := marks[key].priority
+            }
+        }
+        if lowest_priority {
+            marks[lowest_priority] := {x:cur_x, y:cur_y, priority:0}
         }
     }
 }
@@ -410,7 +426,7 @@ RestoreMarks() {
     {
         Array := StrSplit(A_LoopField, "=")
         coords := StrSplit(Array[2], "|")
-        marks[Array[1]] := {x:coords[1], y:coords[2]}
+        marks[Array[1]] := {x:coords[1], y:coords[2], priority:100}
     }
     return marks
 }
