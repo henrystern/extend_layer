@@ -132,7 +132,7 @@ sc033::Ctrl
 sc034::Alt
 sc035::
     if (mark_settings.auto_assign_mark == 1) {
-        AutoMark(mark_settings.mark_priority)
+        AutoMark(mark_settings.mark_priority, 1)
     }
     else {
         SetMark(mark_settings.mark_priority)
@@ -344,21 +344,18 @@ MoveCursor() {
     DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
 }
 
-AutoMark(mark_priority := 0) {
+AutoMark(mark_priority := 0, user_set := 0) {
     ; check if there is a similar mark already
     MouseGetPos, cur_x, cur_y
     For key, value in marks {
         if (abs(cur_x - value.x) < 50 and abs(cur_y - value.y) < 50) { ; if the approximate location is already marked then return
-            if (key != "'") {
+            if (key != "'") { ; should still create mark if the close key is the last jump mark
                 return
-            }
-            else {
-                msgbox '
             }
         }
     }
 
-    min_priority = 99 ; set to never overwrite saved marks which start at 100
+    min_priority = 1000 ; arbitrary high number to start
     For index, key in key_order {
         if not marks.haskey(key) { ; use unused marks first
             marks[key] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
@@ -373,6 +370,12 @@ AutoMark(mark_priority := 0) {
     }
     if lowest_priority {
         marks[lowest_priority] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
+        if (user_set == 1) {
+            IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %lowest_priority%
+            ToolTip, set mark
+            sleep, mark_settings.mark_move_delay
+            RemoveToolTip(1)
+        }
     }
 }
 
