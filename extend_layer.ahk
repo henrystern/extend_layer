@@ -213,6 +213,7 @@ GenerateMarks() {
 ; Associate a key with the current cursor location
 SetMark() {
     ToolTip, set mark
+    ClearModifiers()
     awaiting_input = 1
     Input, letter, L1, {esc}
 
