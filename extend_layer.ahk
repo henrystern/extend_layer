@@ -349,31 +349,34 @@ AutoMark(mark_priority := 0, user_set := 0) {
     ; check if there is a similar mark already
     MouseGetPos, cur_x, cur_y
     For key, value in marks {
-        if (abs(cur_x - value.x) < 50 and abs(cur_y - value.y) < 50) { ; if the approximate location is already marked then return
+        if (abs(cur_x - value.x) < 50 and abs(cur_y - value.y) < 50) { ; if the approximate location is already marked then just update the location of that mark
             if (key != "'") { ; should still create mark if the close key is the last jump mark
-                return
+                lowest_priority := key
+                break
             }
         }
     }
 
     min_priority = 1000 ; arbitrary high number to start
-    For index, key in key_order {
-        if not marks.haskey(key) { ; use unused marks first
-            lowest_priority := key
-            break
-        }
-        if (marks[key].priority <= min_priority) {
-            if (marks[key].priority != min_priority or marks[key].time_set < marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
+    if not lowest_priority { ; if not a nearby mark
+        For index, key in key_order {
+            if not marks.haskey(key) { ; use unused marks first
                 lowest_priority := key
+                break
             }
-            min_priority := marks[key].priority
+            if (marks[key].priority <= min_priority) {
+                if (marks[key].priority != min_priority or marks[key].time_set < marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
+                    lowest_priority := key
+                }
+                min_priority := marks[key].priority
+            }
         }
     }
     if lowest_priority {
         marks[lowest_priority] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
         if (user_set == 1) {
             IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %lowest_priority%
-            ToolTip, set mark
+            ToolTip, set mark at %lowest_priority%
             sleep, mark_settings.mark_move_delay
             RemoveToolTip(1)
         }
