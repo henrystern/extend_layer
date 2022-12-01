@@ -118,7 +118,7 @@ sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
 sc02d::^c
 *sc02e::
     Click, left, down
-    KeyWait % SubStr(A_ThisHotkey, 2) ; substr is slightly annoying but necessary to escape the * modifier
+    KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
     Click, left, up
     if (A_TimeSinceThisHotkey < 300 and mark_settings.auto_mark == 1) { ; users probably don't want to mark the endpoint of long clicks
         AutoMark()
