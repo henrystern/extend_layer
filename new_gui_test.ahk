@@ -50,7 +50,26 @@ HideGuis(){
 }
 
 ShowMarks() {
+    CodeTimer()
     For key, value in marks{
         GuiAtPosition(key, value.x - 7, value.y -7)
     }
+    CodeTimer()
+}
+
+CodeTimer()
+{
+
+	Global StartTimer
+	
+	If (StartTimer != "")
+	{
+		FinishTimer := A_TickCount
+		TimedDuration := FinishTimer - StartTimer
+		StartTimer := ""
+		MsgBox %TimedDuration% ms have elapsed!
+		Return TimedDuration
+	}
+	Else
+		StartTimer := A_TickCount
 }
