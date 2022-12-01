@@ -2,6 +2,7 @@
 #installkeybdhook
 #MaxHotkeysPerInterval 200
 SendMode Input
+SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
 CoordMode, Mouse, Screen
 CoordMode, ToolTip, Screen
