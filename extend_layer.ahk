@@ -14,7 +14,7 @@ Process, Priority,, H
 
 DetectSettingsFile()
 global mouse_settings := ReadMouseSettings()
-marks := new Marks
+Marks := new Marks
 
 ;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
@@ -103,13 +103,13 @@ return
     sc026::Return
     sc027::^Backspace
     sc028::
-        marks.ShowGUI()
+        Marks.ShowGUI()
         awaiting_input = 1
         ClearModifiers()
         Input, mark_to_use, L1 E, {esc}
-        marks.GoToMark(mark_to_use)
-        Sleep, marks.settings.mark_move_delay
-        marks.HideGUI()
+        Marks.GoToMark(mark_to_use)
+        Sleep, Marks.settings.mark_move_delay
+        Marks.HideGUI()
         awaiting_input = 0
         Return
     +sc028::Return ; go to all monitor marks
@@ -126,8 +126,8 @@ return
         Click, left, down
         KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
         Click, left, up
-        if (marks.settings.auto_mark == 1 and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
-            marks.SetMark()
+        if (Marks.settings.auto_mark == 1 and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
+            Marks.SetMark()
         }
         Return
     sc02f::^v
@@ -139,7 +139,7 @@ return
     sc035::
         awaiting_input = 1
         ClearModifiers()
-        marks.SetMark(marks.settings.mark_priority, 1)
+        Marks.SetMark(Marks.settings.mark_priority, 1)
         awaiting_input = 0
         Return
 
@@ -391,13 +391,13 @@ Class Marks
 
     ShowGUI(array_to_use:="usage_marks") {
         Gui, Color, EEAA99
-        Gui, Font, S10 w500, Consolas
+        Gui, Font, S10 w500, Consolas ; todo user setting
         For key, value in this[array_to_use]{
             StringUpper, key, key
             x_position := value.x - 5 - this.screen_dimension.left ; TODO confirm this fix works for other monitor layouts
             y_position := value.y - 5 - this.screen_dimension.top
             Gui, Add, button, x%x_position% y%y_position%, %key%
-        }
+        } ; TODO make ' mark appear over any other marks
         
         Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is for WinSet
         WinSet, TransColor, EEAA99 ; makes all EEAA99 colors invisible
