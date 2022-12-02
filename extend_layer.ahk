@@ -9,16 +9,17 @@ CoordMode, ToolTip, Screen
 SetMouseDelay, -1
 Process, Priority,, H
 
-;; ## Read Settings and Restore Marks
+;; ## Read Settings and initialize class objects
 ;;
 
 DetectSettingsFile()
 global mouse_settings := ReadMouseSettings()
-global marks := RestoreMarks()
-global easymotion_marks := {} ; Easymotion style grid
-global mark_settings := ReadMarkSettings()
-global key_order := ReadKeyOrder()
-GenerateMarks()
+marks := new Marks
+; global marks := RestoreMarks()
+; global easymotion_marks := {} ; Easymotion style grid
+; global mark_settings := ReadMarkSettings()
+; global key_order := ReadKeyOrder()
+; GenerateMarks()
 
 ;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
@@ -59,7 +60,7 @@ return
     ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
     ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
-    sc029::GoToMark(easymotion_marks)
+    sc029::Return ; go to all monitor marks
     sc002::F1
     sc003::F2
     sc004::F3
@@ -106,8 +107,17 @@ return
     sc025::Return
     sc026::Return
     sc027::^Backspace
-    sc028::GoToMark(marks)
-    +sc028::GoToMark(easymotion_marks)
+    sc028::
+        marks.ShowGUI()
+        awaiting_input = 1
+        ClearModifiers()
+        mark_to_use := marks.GetInput()
+        marks.GoToMark(mark_to_use)
+        Sleep, marks.settings.mark_move_delay
+        marks.HideGUI()
+        awaiting_input = 0
+        Return
+    +sc028::Return ; go to all monitor marks
     ;sc02b::
 
     ;;  ### Row 4 - lower letter row
@@ -121,10 +131,10 @@ return
         Click, left, down
         KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
         Click, left, up
-        if (A_TimeSinceThisHotkey < 300 and mark_settings.auto_mark == 1) { ; users probably don't want to mark the endpoint of long clicks
-            AutoMark()
+        if (marks.settings.auto_mark == 1 and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
+            marks.SetMark()
         }
-    Return
+        Return
     sc02f::^v
     sc030::MButton
     sc031::RButton
@@ -132,13 +142,12 @@ return
     sc033::Ctrl
     sc034::Alt
     sc035::
-        if (mark_settings.auto_assign_mark == 1) {
-            AutoMark(mark_settings.mark_priority, 1)
-        }
-        else {
-            SetMark(mark_settings.mark_priority)
-        }
-    return
+        awaiting_input = 1
+        ClearModifiers()
+        marks.SetMark(marks.settings.mark_priority, 1)
+        Sleep, marks.settings.mark_move_delay
+        awaiting_input = 0
+        Return
 
     ;sc01c::
     sc039::Enter
@@ -172,126 +181,10 @@ ClearModifiers() {
         send {RButton up}
 }
 
-;; ### Cursor Marks Functions
-;;
-; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
-; TODO reduce complexity and eliminate reliance on globals
-GenerateMarks() {
-    global
-    SysGet, num_monitors, MonitorCount
-    local i = 1 ; counts keys for all monitor marks
-    local y_splits := mark_settings.y_splits
-
-    Loop, % Min(num_monitors, key_order.length() // y_splits) {
-        local mon_number := A_Index
-        easymotion_marks_monitor_%mon_number% := {}
-        SysGet, mon, Monitor, %mon_number%
-        local mon_width := monRight - monLeft
-        local mon_height := monBottom - monTop
-
-        local j = 1 ; counts keys for that monitors marks
-        local x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
-        local x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
-        local y_mult = mark_settings.y_mult ; changes starting height of marks - lower is higher
-        local initial_y_mult := y_mult
-
-        Loop, % y_splits {
-            local x_mult_mon = mark_settings.x_mult_mon ; changes starting x of marks - lower is left
-            local initial_x_mult_mon := x_mult_mon
-
-            Loop, % x_splits_mon {
-                easymotion_marks_monitor_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
-                x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) / (x_splits_mon - 1)
-                j++
-            }
-
-            local x_mult = mark_settings.x_mult
-            local initial_x_mult := x_mult
-
-            Loop, % x_splits {
-                easymotion_marks[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
-                x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
-                i++
-            }
-
-            y_mult += (2*y_splits - 2*initial_y_mult) / (y_splits - 1)
-        }
-
-    }
-}
-
-; Associate a key with the current cursor location
-SetMark(mark_priority := 0) {
-    ToolTip, set mark
-    ClearModifiers()
-    awaiting_input = 1
-    Input, letter, L1, {esc}
-
-    if (letter) {
-        ToolTip, set mark at %letter%
-        MouseGetPos, cur_x, cur_y
-
-        MARKS[(letter)] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
-        IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %letter%
-
-        sleep, mark_settings.mark_move_delay
-    }
-    awaiting_input = 0
-    RemoveToolTip(1)
-}
-
-; Move cursor to mark location
-GoToMark(array) {
-    ClearModifiers()
-    awaiting_input = 1
-    i = 1
-
-    For key, value in array{
-        if (i == 21) ; tooltip window limit is 20
-            break
-        ToolTip, % key, % value.x - 7, % value.y - 7, % i ; -7 necessary because tooltip aligns at top left TODO check if the adjustment should be different for other resolutions (accessibility settings?)
-        i++
-    }
-
-    Input, letter, L1 E, {esc}
-
-    if (IsNum(letter)) {
-        awaiting_input = 0
-        RemoveToolTip(i-1)
-        GoToMark(easymotion_marks_monitor_%letter%)
-    }
-
-    else {
-        MouseGetPos, prev_x, prev_y
-        original_x := prev_x
-        original_y := prev_y
-        While (prev_x != array[letter].x or prev_y != array[letter].y) { ; looping brute forces through monitor walls without having to compare monitor dimensions
-            MouseMove, array[letter].x, array[letter].y, 0
-            MouseGetPos, prev_x, prev_y
-            if (A_Index == 15) {
-                break ; in case display settings have changed since marks were generated
-            }
-        }
-        array[letter].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
-        marks["'"] := { x : original_x, y : original_y}
-    }
-
-    sleep, mark_settings.mark_move_delay
-    awaiting_input = 0
-    RemoveToolTip(i-1)
-}
-
 IsNum(str) {
     if str is number
         return true
     return false
-}
-
-; Clears mark location tooltips
-RemoveToolTip(i) {
-    Loop % i {
-        ToolTip, , , , % A_Index
-    }
 }
 
 ;; ### Mouse Functions
@@ -346,44 +239,6 @@ MoveCursor() {
     DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
 }
 
-AutoMark(mark_priority := 0, user_set := 0) {
-    ; check if there is a similar mark already
-    MouseGetPos, cur_x, cur_y
-    For key, value in marks {
-        if (abs(cur_x - value.x) < 50 and abs(cur_y - value.y) < 50) { ; if the approximate location is already marked then just update the location of that mark
-            if (key != "'") { ; should still create mark if the close key is the last jump mark
-                lowest_priority := key
-                break
-            }
-        }
-    }
-
-    min_priority = 1000 ; arbitrary high number to start
-    if not lowest_priority { ; if not a nearby mark
-        For index, key in key_order {
-            if not marks.haskey(key) { ; use unused marks first
-                lowest_priority := key
-                break
-            }
-            if (marks[key].priority <= min_priority) {
-                if (marks[key].priority != min_priority or marks[key].time_set < marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
-                    lowest_priority := key
-                }
-                min_priority := marks[key].priority
-            }
-        }
-    }
-    if lowest_priority {
-        marks[lowest_priority] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
-        if (user_set == 1) {
-            IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %lowest_priority%
-            ToolTip, set mark at %lowest_priority%
-            sleep, mark_settings.mark_move_delay
-            RemoveToolTip(1)
-        }
-    }
-}
-
 ;; ### Settings functions
 ;;
 
@@ -419,36 +274,210 @@ ReadMouseSettings() {
     return mouse_settings
 }
 
-ReadKeyOrder() {
-    IniRead, raw_key_order, settings.ini, MARK_ORDER, key_order , q|w|e|r|a|s|d|z|x|c|u|i|o|p|j|k|l|m|,|.
-    key_order := []
-    Loop, Parse, raw_key_order, |
-    {
-        key_order.Push(A_LoopField)
-    }
-    return key_order
+; 
+; to add to class
+; 
 
+; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
+; TODO reduce complexity and eliminate reliance on globals
+GenerateMarks() {
+    global
+    SysGet, num_monitors, MonitorCount
+    local i = 1 ; counts keys for all monitor marks
+    local y_splits := mark_settings.y_splits
+
+    Loop, % Min(num_monitors, key_order.length() // y_splits) {
+        local mon_number := A_Index
+        easymotion_marks_monitor_%mon_number% := {}
+        SysGet, mon, Monitor, %mon_number%
+        local mon_width := monRight - monLeft
+        local mon_height := monBottom - monTop
+
+        local j = 1 ; counts keys for that monitors marks
+        local x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
+        local x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
+        local y_mult = mark_settings.y_mult ; changes starting height of marks - lower is higher
+        local initial_y_mult := y_mult
+
+        Loop, % y_splits {
+            local x_mult_mon = mark_settings.x_mult_mon ; changes starting x of marks - lower is left
+            local initial_x_mult_mon := x_mult_mon
+
+            Loop, % x_splits_mon {
+                easymotion_marks_monitor_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
+                x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) / (x_splits_mon - 1)
+                j++
+            }
+
+            local x_mult = mark_settings.x_mult
+            local initial_x_mult := x_mult
+
+            Loop, % x_splits {
+                easymotion_marks[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
+                x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
+                i++
+            }
+
+            y_mult += (2*y_splits - 2*initial_y_mult) / (y_splits - 1)
+        }
+
+    }
 }
 
-ReadMarkSettings() {
-    IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS
-    mark_settings := {}
-    Loop, Parse, raw_mark_settings, "`n"
-    {
-        Array := StrSplit(A_LoopField, "=")
-        mark_settings[Array[1]] := Array[2]
-    }
-    return mark_settings
-}
+;; ### Classes
+;;
+;;
 
-RestoreMarks() {
-    IniRead, saved_marks, saved_marks.ini, MARKS
-    marks := {}
-    Loop, Parse, saved_marks, "`n"
-    {
-        Array := StrSplit(A_LoopField, "=")
-        coords := StrSplit(Array[2], "|")
-        marks[Array[1]] := {x:coords[1], y:coords[2], priority:100, time_set:0}
+Class Marks
+{
+
+    __New() {
+        this.settings := this.ReadSettings()
+        this.key_order := this.ReadKeyOrder()
+        this.usage_marks := this.RestoreMarks()
+        this.screen_dimension := this.GetScreenDimension()
     }
-    return marks
+
+    ReadSettings() {
+        IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS
+        mark_settings := {}
+        Loop, Parse, raw_mark_settings, "`n"
+        {
+            Array := StrSplit(A_LoopField, "=")
+            mark_settings[Array[1]] := Array[2]
+        }
+        return mark_settings
+    }
+
+    ReadKeyOrder() {
+        IniRead, raw_key_order, settings.ini, MARK_ORDER, key_order , q|w|e|r|a|s|d|z|x|c|u|i|o|p|j|k|l|m|,|.
+        key_order := []
+        Loop, Parse, raw_key_order, |
+        {
+            key_order.Push(A_LoopField)
+        }
+        return key_order
+
+    }
+
+    RestoreMarks() {
+        IniRead, raw_saved_marks, saved_marks.ini, MARKS
+        saved_marks := {}
+        Loop, Parse, raw_saved_marks, "`n"
+        {
+            Array := StrSplit(A_LoopField, "=")
+            coords := StrSplit(Array[2], "|")
+            saved_marks[Array[1]] := {x:coords[1], y:coords[2], priority:this.settings.mark_priority, time_set:0}
+        }
+        return saved_marks
+    }
+
+    GetScreenDimension() { 
+        SysGet, count_monitors, MonitorCount
+        screen_dimension := {top: 0, bottom: 0, left: 0, right: 0}
+        loop % count_monitors {
+            SysGet, mon, Monitor, %A_Index%
+            if (monLeft < left) {
+                screen_dimension.left := monLeft
+            }
+            if (monRight > right) {
+                screen_dimension.right := monRight
+            }
+            if (monTop < top) {
+                screen_dimemension.top := monTop
+            }
+            if (monBottom > bottom) {
+                screen_dimension.bottom := monBottom
+            }
+        }
+        screen_dimension.monWidth := screen_dimension.right - screen_dimension.left
+        screen_dimension.monHeight := screen_dimension.bottom - screen_dimension.top
+        Return screen_dimension 
+    }
+
+    ShowGUI(array_to_use:="usage_marks") {
+        Gui, Color, EEAA99
+        Gui, Font, S10 w500, Lucida Console
+        For key, value in this[array_to_use]{
+            StringUpper, key, key
+            x_position := value.x - 5
+            y_position := value.y - 5 - this.screen_dimension.top
+            Gui, Add, button, x%x_position% y%y_position%, %key%
+        }
+        
+        Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is for WinSet
+        WinSet, TransColor, EEAA99 ; makes all EEAA99 colors invisible
+        Gui, Show, % " x" this.screen_dimension.left " y" this.screen_dimension.top " w" this.screen_dimension.monWidth " h" this.screen_dimension.monHeight " NoActivate"
+    }
+
+    HideGUI() {
+        Gui, destroy
+    }
+
+    SetMark(mark_priority := 0, user_set := 0) {
+        MouseGetPos, cur_x, cur_y
+        if (user_set == 1 and this.settings.auto_assign_mark == 0) {
+            mark_to_use := this.GetInput()
+        }
+        else {
+            mark_to_use := this.NearbyMark(cur_x, cur_y)
+            if not mark_to_use {
+                mark_to_use := this.LowestPriorityMark()
+            }
+        }
+        if mark_to_use {
+            this.usage_marks[mark_to_use] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
+            if (user_set == 1) {
+                IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %mark_to_use%
+                this.HideGUI()
+            }
+        }
+    }
+
+    NearbyMark(x, y, x_threshold:=50, y_threshold:=50) {
+        For key, value in this.usage_marks {
+            if (abs(x - value.x) < x_threshold and abs(y - value.y) < y_threshold) { ; if the approximate location is already marked then just update the location of that mark
+                if (key != "'") { ; should still create mark if the close key is the last jump mark
+                    Return key
+                }
+            }
+        }
+        Return
+    }
+
+    LowestPriorityMark() {
+        min_priority := 100 ; the starting priority at which to consider replacing the mark
+        For index, key in this.key_order {
+            if not this.usage_marks.haskey(key) { ; use unused marks first
+                Return key
+            }
+            if (this.usage_marks[key].priority <= min_priority) {
+                if (this.usage_marks[key].priority != min_priority or this.usage_marks[key].time_set < this.usage_marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
+                    lowest_priority := key
+                }
+                min_priority := this.usage_marks[key].priority
+            }
+        }
+        Return lowest_priority
+    }
+
+    GoToMark(mark_to_use, array_to_use:="usage_marks") {
+        MouseGetPos, prev_x, prev_y
+        original_x := prev_x
+        original_y := prev_y
+        While (prev_x != this[array_to_use][mark_to_use].x or prev_y != this[array_to_use][mark_to_use].y) { ; looping brute forces through monitor walls without having to compare monitor dimensions
+            MouseMove, this[array_to_use][mark_to_use].x, this[array_to_use][mark_to_use].y, 0
+            MouseGetPos, prev_x, prev_y
+            if (A_Index == 15) {
+                break ; in case display settings have changed since marks were generated
+            }
+        }
+        this[array_to_use][mark_to_use].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
+        this[array_to_use]["'"] := { x : original_x, y : original_y}
+    }
+
+    GetInput() {
+        Input, letter, L1 E, {esc}
+        return letter
+    }
 }
