@@ -15,11 +15,6 @@ Process, Priority,, H
 DetectSettingsFile()
 global mouse_settings := ReadMouseSettings()
 marks := new Marks
-; global marks := RestoreMarks()
-; global easymotion_marks := {} ; Easymotion style grid
-; global mark_settings := ReadMarkSettings()
-; global key_order := ReadKeyOrder()
-; GenerateMarks()
 
 ;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
@@ -111,7 +106,7 @@ return
         marks.ShowGUI()
         awaiting_input = 1
         ClearModifiers()
-        mark_to_use := marks.GetInput()
+        Input, mark_to_use, L1 E, {esc}
         marks.GoToMark(mark_to_use)
         Sleep, marks.settings.mark_move_delay
         marks.HideGUI()
@@ -145,7 +140,6 @@ return
         awaiting_input = 1
         ClearModifiers()
         marks.SetMark(marks.settings.mark_priority, 1)
-        Sleep, marks.settings.mark_move_delay
         awaiting_input = 0
         Return
 
@@ -324,7 +318,7 @@ GenerateMarks() {
     }
 }
 
-;; ### Classes
+;; ## Classes
 ;;
 ;;
 
@@ -377,16 +371,16 @@ Class Marks
         screen_dimension := {top: 0, bottom: 0, left: 0, right: 0}
         loop % count_monitors {
             SysGet, mon, Monitor, %A_Index%
-            if (monLeft < left) {
+            if (monLeft < screen_dimension.left) {
                 screen_dimension.left := monLeft
             }
-            if (monRight > right) {
+            if (monRight > screen_dimension.right) {
                 screen_dimension.right := monRight
             }
-            if (monTop < top) {
-                screen_dimemension.top := monTop
+            if (monTop < screen_dimension.top) {
+                screen_dimension.top := monTop
             }
-            if (monBottom > bottom) {
+            if (monBottom > screen_dimension.bottom) {
                 screen_dimension.bottom := monBottom
             }
         }
@@ -397,10 +391,10 @@ Class Marks
 
     ShowGUI(array_to_use:="usage_marks") {
         Gui, Color, EEAA99
-        Gui, Font, S10 w500, Lucida Console
+        Gui, Font, S10 w500, Consolas
         For key, value in this[array_to_use]{
             StringUpper, key, key
-            x_position := value.x - 5
+            x_position := value.x - 5 - this.screen_dimension.left ; TODO confirm this fix works for other monitor layouts
             y_position := value.y - 5 - this.screen_dimension.top
             Gui, Add, button, x%x_position% y%y_position%, %key%
         }
@@ -417,19 +411,23 @@ Class Marks
     SetMark(mark_priority := 0, user_set := 0) {
         MouseGetPos, cur_x, cur_y
         if (user_set == 1 and this.settings.auto_assign_mark == 0) {
-            mark_to_use := this.GetInput()
+            ToolTip, Set Mark
+            Input, mark_to_use, L1 E, {esc}
+            ToolTip
         }
         else {
             mark_to_use := this.NearbyMark(cur_x, cur_y)
             if not mark_to_use {
-                mark_to_use := this.LowestPriorityMark()
+                mark_to_use := this.FindLowestPriorityMark()
             }
         }
         if mark_to_use {
             this.usage_marks[mark_to_use] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
             if (user_set == 1) {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %mark_to_use%
-                this.HideGUI()
+                ToolTip, Set Mark at %mark_to_use%
+                Sleep, % this.settings.mark_move_delay
+                ToolTip
             }
         }
     }
@@ -445,7 +443,7 @@ Class Marks
         Return
     }
 
-    LowestPriorityMark() {
+    FindLowestPriorityMark() {
         min_priority := 100 ; the starting priority at which to consider replacing the mark
         For index, key in this.key_order {
             if not this.usage_marks.haskey(key) { ; use unused marks first
@@ -474,10 +472,5 @@ Class Marks
         }
         this[array_to_use][mark_to_use].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
         this[array_to_use]["'"] := { x : original_x, y : original_y}
-    }
-
-    GetInput() {
-        Input, letter, L1 E, {esc}
-        return letter
     }
 }
