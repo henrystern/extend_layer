@@ -417,12 +417,18 @@ Class Marks
         }
         else {
             mark_to_use := this.NearbyMark(cur_x, cur_y)
+            nearby_mark = 1
             if not mark_to_use {
                 mark_to_use := this.FindLowestPriorityMark()
+                nearby_mark = 0
             }
         }
         if mark_to_use {
-            this.usage_marks[mark_to_use] := {x:cur_x, y:cur_y, priority:mark_priority, time_set:A_TickCount}
+            this.usage_marks[mark_to_use] := {x:cur_x, y:cur_y}
+            if not nearby_mark {
+                this.usage_marks[mark_to_use].priority := mark_priority
+                this.usage_marks[mark_to_use].time_set := A_TickCount
+            }
             if (user_set == 1) {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %mark_to_use%
                 ToolTip, Set Mark at %mark_to_use%
