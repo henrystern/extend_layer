@@ -102,7 +102,7 @@ Return
     sc025::Return
     sc026::Return
     sc027::^Backspace
-    sc028::SessionMarks.GoToMark()
+    sc028::SessionMarks.GoToMark("usage_marks")
     +sc028::SessionMarks.GoToMark("all_monitors")
     ;sc02b::
 
