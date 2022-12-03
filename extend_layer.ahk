@@ -333,12 +333,23 @@ Class MouseControls
 
 Class Marks
 {
-
     __New() {
         this.settings := this.ReadSettings()
         this.key_order := this.ReadKeyOrder()
-        this.usage_marks := this.RestoreMarks()
+        this.mark_arrays := {}
+        this.mark_arrays.usage_marks := this.RestoreMarks()
         this.screen_dimension := this.GetScreenDimension()
+        ; y_splits := this.settings.y_splits
+        ; for key, value in screen_dimension {
+        ;     if key == 0 { ; 0 is for usage marks
+        ;         break
+        ;     }
+        ;     this.mark_arrays[key] := {}
+        ;     i = 1
+        ;     x_splits := (this.key_order.Length() // this.screen_dimension[0].num_monitors)
+        ;     y_mult := this.settings.y_mult
+        ;     initial_y_mult := y_mult
+        ; }
     }
 
     ReadSettings() {
@@ -376,41 +387,44 @@ Class Marks
     }
 
     GetScreenDimension() { 
-        SysGet, count_monitors, MonitorCount
-        screen_dimension := {top: 0, bottom: 0, left: 0, right: 0}
-        loop % count_monitors {
+        SysGet, num_monitors, MonitorCount
+        screen_dimension := {0: {num_monitors: num_monitors, top: 0, bottom: 0, left: 0, right: 0}}
+        loop % num_monitors {
             SysGet, mon, Monitor, %A_Index%
-            if (monLeft < screen_dimension.left) {
-                screen_dimension.left := monLeft
+            screen_dimension[A_Index] := {top: monTop, bottom: monBottom, left: monLeft, right: monRight}
+            screen_dimension[A_Index].monWidth := screen_dimension[A_Index].right - screen_dimension[A_Index].left
+            screen_dimension[A_Index].monHeight := screen_dimension[A_Index].bottom - screen_dimension[A_Index].top
+            if (monLeft < screen_dimension[0].left) {
+                screen_dimension[0].left := monLeft
             }
-            if (monRight > screen_dimension.right) {
-                screen_dimension.right := monRight
+            if (monRight > screen_dimension[0].right) {
+                screen_dimension[0].right := monRight
             }
-            if (monTop < screen_dimension.top) {
-                screen_dimension.top := monTop
+            if (monTop < screen_dimension[0].top) {
+                screen_dimension[0].top := monTop
             }
-            if (monBottom > screen_dimension.bottom) {
-                screen_dimension.bottom := monBottom
+            if (monBottom > screen_dimension[0].bottom) {
+                screen_dimension[0].bottom := monBottom
             }
         }
-        screen_dimension.monWidth := screen_dimension.right - screen_dimension.left
-        screen_dimension.monHeight := screen_dimension.bottom - screen_dimension.top
+        screen_dimension[0].monWidth := screen_dimension[0].right - screen_dimension[0].left
+        screen_dimension[0].monHeight := screen_dimension[0].bottom - screen_dimension[0].top
         Return screen_dimension 
     }
 
     ShowGUI(array_to_use:="usage_marks") {
         Gui, Color, EEAA99
         Gui, Font, S10 w500, Consolas ; todo user setting
-        For key, value in this[array_to_use]{
+        For key, value in this.mark_arrays[array_to_use]{
             StringUpper, key, key
-            x_position := value.x - 5 - this.screen_dimension.left ; TODO confirm this fix works for other monitor layouts
-            y_position := value.y - 5 - this.screen_dimension.top
+            x_position := value.x - 5 - this.screen_dimension[0].left ; because 0, 0 is always the top left of the gui but the mark position can be negative
+            y_position := value.y - 5 - this.screen_dimension[0].top
             Gui, Add, button, x%x_position% y%y_position%, %key%
         } ; TODO make ' mark appear over any other marks
         
         Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is for WinSet
         WinSet, TransColor, EEAA99 ; makes all EEAA99 colors invisible
-        Gui, Show, % " x" this.screen_dimension.left " y" this.screen_dimension.top " w" this.screen_dimension.monWidth " h" this.screen_dimension.monHeight " NoActivate"
+        Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].monWidth " h" this.screen_dimension[0].monHeight " NoActivate"
     }
 
     HideGUI() {
@@ -433,10 +447,10 @@ Class Marks
             }
         }
         if mark_to_use {
-            this.usage_marks[mark_to_use] := {x:cur_x, y:cur_y}
+            this.mark_arrays.usage_marks[mark_to_use] := {x:cur_x, y:cur_y}
             if not nearby_mark {
-                this.usage_marks[mark_to_use].priority := mark_priority
-                this.usage_marks[mark_to_use].time_set := A_TickCount
+                this.mark_arrays.usage_marks[mark_to_use].priority := mark_priority
+                this.mark_arrays.usage_marks[mark_to_use].time_set := A_TickCount
             }
             if (user_set == 1) {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %mark_to_use%
@@ -448,7 +462,7 @@ Class Marks
     }
 
     NearbyMark(x, y, x_threshold:=50, y_threshold:=50) {
-        For key, value in this.usage_marks {
+        For key, value in this.mark_arrays.usage_marks {
             if (abs(x - value.x) < x_threshold and abs(y - value.y) < y_threshold) { ; if the approximate location is already marked then just update the location of that mark
                 if (key != "'") { ; should still create mark if the close key is the last jump mark
                     Return key
@@ -461,14 +475,14 @@ Class Marks
     FindLowestPriorityMark() {
         min_priority := 100 ; the starting priority at which to consider replacing the mark
         For index, key in this.key_order {
-            if not this.usage_marks.haskey(key) { ; use unused marks first
+            if not this.mark_arrays.usage_marks.haskey(key) { ; use unused marks first
                 Return key
             }
-            if (this.usage_marks[key].priority <= min_priority) {
-                if (this.usage_marks[key].priority != min_priority or this.usage_marks[key].time_set < this.usage_marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
+            if (this.mark_arrays.usage_marks[key].priority <= min_priority) {
+                if (this.mark_arrays.usage_marks[key].priority != min_priority or this.mark_arrays.usage_marks[key].time_set < this.mark_arrays.usage_marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
                     lowest_priority := key
                 }
-                min_priority := this.usage_marks[key].priority
+                min_priority := this.mark_arrays.usage_marks[key].priority
             }
         }
         Return lowest_priority
@@ -478,14 +492,14 @@ Class Marks
         MouseGetPos, prev_x, prev_y
         original_x := prev_x
         original_y := prev_y
-        While (prev_x != this[array_to_use][mark_to_use].x or prev_y != this[array_to_use][mark_to_use].y) { ; looping brute forces through monitor walls without having to compare monitor dimensions
-            MouseMove, this[array_to_use][mark_to_use].x, this[array_to_use][mark_to_use].y, 0
+        While (prev_x != this.mark_arrays[array_to_use][mark_to_use].x or prev_y != this.mark_arrays[array_to_use][mark_to_use].y) { ; looping brute forces through monitor walls without having to compare monitor dimensions
+            MouseMove, this.mark_arrays[array_to_use][mark_to_use].x, this.mark_arrays[array_to_use][mark_to_use].y, 0
             MouseGetPos, prev_x, prev_y
             if (A_Index == 15) {
                 break ; in case display settings have changed since marks were generated
             }
         }
-        this[array_to_use][mark_to_use].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
-        this[array_to_use]["'"] := { x : original_x, y : original_y}
+        this.mark_arrays[array_to_use][mark_to_use].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
+        this.mark_arrays[array_to_use]["'"] := { x : original_x, y : original_y}
     }
 }
