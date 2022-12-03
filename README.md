@@ -6,20 +6,19 @@ This script makes the CapsLock key the most useful key on the keyboard, by repur
 ### Features
   * Intuitive and balanced layout
   * Smooth and configurable mouse movement
-  * Vim style marks for cursor locations
-  * Easymotion inspired grid of cursor marks
+  * Vim style marks to jump between cursor locations
 
 ### Setup
-* First clone the repository or download and extract the zip file.
-* If you have AHK installed run extend_layer.ahk
-* Otherwise run extend_layer.exe
+1. First clone the repository or download and extract the zip file.
+1. If you have AHK installed run extend_layer.ahk
+1. Otherwise run extend_layer.exe
 
 ### Run on Startup
 * Win+r 'shell:startup'
 * In the startup folder, place a shortcut to the script or .exe (depending on if you have AHK installed).
 
 ### Customization
-* Customization is encouraged and should be self explanatory from the comments and the [AHK keylist](https://www.autohotkey.com/docs/KeyList.htm)
+* Customization should be self explanatory from the comments and the [AHK keylist](https://www.autohotkey.com/docs/KeyList.htm)
 
 ### Tips
 * By default CapsLock is remapped to LShift + RShift
