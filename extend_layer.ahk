@@ -1,4 +1,5 @@
 ﻿#NoEnv
+; #Warn
 #installkeybdhook
 #MaxHotkeysPerInterval 200
 SendMode Input
@@ -55,7 +56,16 @@ LShift & RShift::CapsLock
     ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
     ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
-    sc029::Return ; go to all monitor marks
+    sc029::
+        Marks.ShowGUI(1)
+        awaiting_input = 1
+        ClearModifiers()
+        Input, chosen_mark, L1 E, {esc}
+        Marks.GoToMark(chosen_mark, 1)
+        Sleep, Marks.settings.mark_move_delay
+        Marks.HideGUI()
+        awaiting_input = 0
+        Return
     sc002::F1
     sc003::F2
     sc004::F3
@@ -102,16 +112,7 @@ LShift & RShift::CapsLock
     sc025::Return
     sc026::Return
     sc027::^Backspace
-    sc028::
-        Marks.ShowGUI()
-        awaiting_input = 1
-        ClearModifiers()
-        Input, mark_to_use, L1 E, {esc}
-        Marks.GoToMark(mark_to_use)
-        Sleep, Marks.settings.mark_move_delay
-        Marks.HideGUI()
-        awaiting_input = 0
-        Return
+    sc028::Marks.GoToMark()
     +sc028::Return ; go to all monitor marks
     ;sc02b::
 
@@ -196,58 +197,6 @@ DetectSettingsFile() {
     return
 }
 
-
-
-; 
-; to add to class
-; 
-
-; Generate default marks TODO: more rational key orderings, maybe key_order as dict with key for number of screens or x_splits outer loop and group by 3s ie. q, a, x
-; TODO reduce complexity and eliminate reliance on globals
-GenerateMarks() {
-    global
-    SysGet, num_monitors, MonitorCount
-    local i = 1 ; counts keys for all monitor marks
-    local y_splits := mark_settings.y_splits
-
-    Loop, % Min(num_monitors, key_order.length() // y_splits) {
-        local mon_number := A_Index
-        easymotion_marks_monitor_%mon_number% := {}
-        SysGet, mon, Monitor, %mon_number%
-        local mon_width := monRight - monLeft
-        local mon_height := monBottom - monTop
-
-        local j = 1 ; counts keys for that monitors marks
-        local x_splits_mon := key_order.Length() // y_splits ; number of splits for that monitors marks ('+mon_number)
-        local x_splits := (key_order.Length() // Min(num_monitors, key_order.length() // y_splits)) // y_splits ; number of splits for all monitor marks (")
-        local y_mult = mark_settings.y_mult ; changes starting height of marks - lower is higher
-        local initial_y_mult := y_mult
-
-        Loop, % y_splits {
-            local x_mult_mon = mark_settings.x_mult_mon ; changes starting x of marks - lower is left
-            local initial_x_mult_mon := x_mult_mon
-
-            Loop, % x_splits_mon {
-                easymotion_marks_monitor_%mon_number%[(key_order[j])] := {x : monLeft + x_mult_mon*(mon_width / (4 * x_splits_mon)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
-                x_mult_mon += (4*x_splits_mon - 2*initial_x_mult_mon) / (x_splits_mon - 1)
-                j++
-            }
-
-            local x_mult = mark_settings.x_mult
-            local initial_x_mult := x_mult
-
-            Loop, % x_splits {
-                easymotion_marks[(key_order[i])] := {x : monLeft + x_mult*(mon_width / (4 * x_splits)), y : monTop + y_mult*(mon_height / (2 * y_splits))}
-                x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
-                i++
-            }
-
-            y_mult += (2*y_splits - 2*initial_y_mult) / (y_splits - 1)
-        }
-
-    }
-}
-
 ;; ## Classes
 ;;
 ;;
@@ -312,8 +261,6 @@ Class MouseControls
 
         this.velocity_x := this.Accelerate(this.velocity_x, left, right)
         this.velocity_y := this.Accelerate(this.velocity_y, up, down)
-        ; MsgBox, % this.velocity_x
-
 
         RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
         MouseMove, this.velocity_x, this.velocity_y, 0, R
@@ -338,19 +285,47 @@ Class Marks
         this.key_order := this.ReadKeyOrder()
         this.mark_arrays := {}
         this.mark_arrays.usage_marks := this.RestoreMarks()
-        this.screen_dimension := this.GetScreenDimension()
-        ; y_splits := this.settings.y_splits
-        ; for key, value in screen_dimension {
-        ;     if key == 0 { ; 0 is for usage marks
-        ;         break
-        ;     }
-        ;     this.mark_arrays[key] := {}
-        ;     i = 1
-        ;     x_splits := (this.key_order.Length() // this.screen_dimension[0].num_monitors)
-        ;     y_mult := this.settings.y_mult
-        ;     initial_y_mult := y_mult
-        ; }
+        this.screen_dimension := this.GetScreenDimensions()
+        for mon_number, value in this.screen_dimension {
+            if (mon_number == 0) { ; 0 is for usage marks
+                continue
+            }
+            this.mark_arrays[mon_number] := this.GenerateMarks(mon_number, value)
+        }
     }
+
+    GenerateMarks(monitor, dimensions) {
+        y_splits := this.settings.y_splits
+        y_mult := this.settings.y_mult ; changes starting height of marks - lower is higher
+        initial_y_mult := y_mult ; changes starting height of marks - lower is higher
+        y_locations := {}
+        Loop, % y_splits {
+            y_locations[A_Index] := dimensions.top + y_mult*(dimensions.height / (2 * y_splits))
+            y_mult += (2*y_splits - 2*initial_y_mult) / (y_splits - 1)
+        }
+
+        x_splits := (this.key_order.Length() // y_splits)
+        x_mult := this.settings.x_mult
+        initial_x_mult := x_mult
+        x_values := []
+        x_locations := {}
+        Loop, % x_splits {
+            x_locations[A_Index] := dimensions.left + x_mult*(dimensions.width / (4 * x_splits))
+            x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
+        }
+
+        mark_array := {}
+        i = 1
+        for key, y_val in y_locations {
+            for key, x_val in x_locations {
+                mark_array[this.key_order[i]] := {x: x_val, y: y_val}
+                i++
+            }
+        }
+
+        Return mark_array
+    }
+
 
     ReadSettings() {
         IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS
@@ -386,14 +361,14 @@ Class Marks
         return saved_marks
     }
 
-    GetScreenDimension() { 
+    GetScreenDimensions() { 
         SysGet, num_monitors, MonitorCount
-        screen_dimension := {0: {num_monitors: num_monitors, top: 0, bottom: 0, left: 0, right: 0}}
+        screen_dimension := {0: {top: 0, bottom: 0, left: 0, right: 0}}
         loop % num_monitors {
             SysGet, mon, Monitor, %A_Index%
             screen_dimension[A_Index] := {top: monTop, bottom: monBottom, left: monLeft, right: monRight}
-            screen_dimension[A_Index].monWidth := screen_dimension[A_Index].right - screen_dimension[A_Index].left
-            screen_dimension[A_Index].monHeight := screen_dimension[A_Index].bottom - screen_dimension[A_Index].top
+            screen_dimension[A_Index].width := screen_dimension[A_Index].right - screen_dimension[A_Index].left
+            screen_dimension[A_Index].height := screen_dimension[A_Index].bottom - screen_dimension[A_Index].top
             if (monLeft < screen_dimension[0].left) {
                 screen_dimension[0].left := monLeft
             }
@@ -407,8 +382,8 @@ Class Marks
                 screen_dimension[0].bottom := monBottom
             }
         }
-        screen_dimension[0].monWidth := screen_dimension[0].right - screen_dimension[0].left
-        screen_dimension[0].monHeight := screen_dimension[0].bottom - screen_dimension[0].top
+        screen_dimension[0].width := screen_dimension[0].right - screen_dimension[0].left
+        screen_dimension[0].height := screen_dimension[0].bottom - screen_dimension[0].top
         Return screen_dimension 
     }
 
@@ -417,14 +392,14 @@ Class Marks
         Gui, Font, S10 w500, Consolas ; todo user setting
         For key, value in this.mark_arrays[array_to_use]{
             StringUpper, key, key
-            x_position := value.x - 5 - this.screen_dimension[0].left ; because 0, 0 is always the top left of the gui but the mark position can be negative
-            y_position := value.y - 5 - this.screen_dimension[0].top
+            x_position := value.x - 5  - this.screen_dimension[0].left ; because 0, 0 is always the top left of the gui but the mark position can be negative
+            y_position := value.y - 5  - this.screen_dimension[0].top
             Gui, Add, button, x%x_position% y%y_position%, %key%
         } ; TODO make ' mark appear over any other marks
         
         Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is for WinSet
         WinSet, TransColor, EEAA99 ; makes all EEAA99 colors invisible
-        Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].monWidth " h" this.screen_dimension[0].monHeight " NoActivate"
+        Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].width " h" this.screen_dimension[0].height " NoActivate"
     }
 
     HideGUI() {
@@ -488,7 +463,7 @@ Class Marks
         Return lowest_priority
     }
 
-    GoToMark(mark_to_use, array_to_use:="usage_marks") {
+    MoveCursor(mark_to_use, array_to_use:="usage_marks") {
         MouseGetPos, prev_x, prev_y
         original_x := prev_x
         original_y := prev_y
@@ -501,5 +476,20 @@ Class Marks
         }
         this.mark_arrays[array_to_use][mark_to_use].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
         this.mark_arrays[array_to_use]["'"] := { x : original_x, y : original_y}
+    }
+
+    GoToMark(array_to_use:="usage_marks") {
+        this.ShowGUI(array_to_use)
+        awaiting_input = 1
+        ClearModifiers()
+        Input, chosen_mark, L1 E, {esc}
+        if (IsNum(chosen_mark)) {
+            this.GoToMark(chosen_mark)
+        }
+        this.MoveCursor(chosen_mark)
+        Sleep, this.settings.mark_move_delay
+        this.HideGUI()
+        awaiting_input = 0
+        Return
     }
 }
