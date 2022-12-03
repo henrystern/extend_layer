@@ -421,7 +421,7 @@ Class Marks
                 this.mark_arrays.usage_marks[mark_to_use].time_set := A_TickCount
             }
             if (user_set == 1) {
-                IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, %mark_to_use%
+                IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % mark_to_use ; TODO iniwrite doesn't work properly for [, ], and ;
                 ToolTip, Set Mark at %mark_to_use%
                 Sleep, % this.settings.mark_move_delay
                 ToolTip
