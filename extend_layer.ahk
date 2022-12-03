@@ -1,5 +1,4 @@
 ﻿#NoEnv
-; #Warn
 #installkeybdhook
 #MaxHotkeysPerInterval 200
 SendMode Input
@@ -14,7 +13,7 @@ Process, Priority,, H
 ;;
 
 DetectSettingsFile()
-Marks := new Marks
+SessionMarks := new Marks
 MouseController := new MouseControls
 
 ;; ## Mappings
@@ -27,13 +26,13 @@ LShift & RShift::CapsLock
 *CapsLock:: ; -------------------
     MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
     MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
-    Return
+Return
 
 *CapsLock up:: ; -------------------
-    MouseController.SetTimer("cursor_timer", "off")
-    MouseController.SetTimer("scroll_wheel_timer", "off")
-    ClearModifiers()
-    Return
+MouseController.SetTimer("cursor_timer", "off")
+MouseController.SetTimer("scroll_wheel_timer", "off")
+ClearModifiers()
+Return
 
 #If, GetKeyState("CapsLock", "P") and awaiting_input == 0 ; ------------------------
 
@@ -56,16 +55,7 @@ LShift & RShift::CapsLock
     ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
     ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
 
-    sc029::
-        Marks.ShowGUI(1)
-        awaiting_input = 1
-        ClearModifiers()
-        Input, chosen_mark, L1 E, {esc}
-        Marks.GoToMark(chosen_mark, 1)
-        Sleep, Marks.settings.mark_move_delay
-        Marks.HideGUI()
-        awaiting_input = 0
-        Return
+    sc029::SessionMarks.GoToMark("all_monitors")
     sc002::F1
     sc003::F2
     sc004::F3
@@ -112,8 +102,8 @@ LShift & RShift::CapsLock
     sc025::Return
     sc026::Return
     sc027::^Backspace
-    sc028::Marks.GoToMark()
-    +sc028::Return ; go to all monitor marks
+    sc028::SessionMarks.GoToMark()
+    +sc028::SessionMarks.GoToMark("all_monitors")
     ;sc02b::
 
     ;;  ### Row 4 - lower letter row
@@ -127,10 +117,10 @@ LShift & RShift::CapsLock
         Click, left, down
         KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
         Click, left, up
-        if (Marks.settings.auto_mark == 1 and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
-            Marks.SetMark()
+        if (SessionMarks.settings.auto_mark == 1 and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
+            SessionMarks.SetMark()
         }
-        Return
+    Return
     sc02f::^v
     sc030::MButton
     sc031::RButton
@@ -140,9 +130,9 @@ LShift & RShift::CapsLock
     sc035::
         awaiting_input = 1
         ClearModifiers()
-        Marks.SetMark(Marks.settings.mark_priority, 1)
+        SessionMarks.SetMark(Marks.settings.mark_priority, 1)
         awaiting_input = 0
-        Return
+    Return
 
     ;sc01c::
     sc039::Enter
@@ -203,7 +193,7 @@ DetectSettingsFile() {
 
 Class MouseControls
 {
-;; inspired by https://github.com/4strid/mouse-control.autohotkey
+    ;; inspired by https://github.com/4strid/mouse-control.autohotkey
     __New() {
         this.settings := this.ReadMouseSettings()
         this.velocity_x := 0
@@ -213,8 +203,8 @@ Class MouseControls
     }
 
     SetTimer(timer_id, period) {
-		timer := this[timer_id]
-		SetTimer % timer, % period
+        timer := this[timer_id]
+        SetTimer % timer, % period
     }
 
     ReadMouseSettings() {
@@ -225,9 +215,6 @@ Class MouseControls
             Array := StrSplit(A_LoopField, "=")
             mouse_settings[Array[1]] := Array[2]
         }
-        ; normalize acceleration and top_speed for mouse_interval - TODO this didn't work very well
-        ; mouse_settings["acceleration"] := mouse_settings["acceleration"] // (1000 / mouse_settings["mouse_interval"])
-        ; mouse_settings["top_speed"] := mouse_settings["top_speed"] // (1000 / mouse_settings["mouse_interval"])
         return mouse_settings
     }
 
@@ -248,7 +235,6 @@ Class MouseControls
                 send {WheelDown}
         }
     }
-
 
     MoveCursor() {
         if (awaiting_input == 1)
@@ -283,49 +269,47 @@ Class Marks
     __New() {
         this.settings := this.ReadSettings()
         this.key_order := this.ReadKeyOrder()
+        this.screen_dimension := this.GetScreenDimensions() ; get dimensions of all monitors and the overall workspace
         this.mark_arrays := {}
         this.mark_arrays.usage_marks := this.RestoreMarks()
-        this.screen_dimension := this.GetScreenDimensions()
         for mon_number, value in this.screen_dimension {
             if (mon_number == 0) { ; 0 is for usage marks
                 continue
             }
-            this.mark_arrays[mon_number] := this.GenerateMarks(mon_number, value)
+            this.mark_arrays[mon_number] := this.GenerateMarks([value])
         }
+        monitor_dimensions := this.screen_dimension.Clone()
+        monitor_dimensions.Delete(0)
+        this.mark_arrays.all_monitors := this.GenerateMarks(monitor_dimensions)
     }
 
-    GenerateMarks(monitor, dimensions) {
-        y_splits := this.settings.y_splits
-        y_mult := this.settings.y_mult ; changes starting height of marks - lower is higher
-        initial_y_mult := y_mult ; changes starting height of marks - lower is higher
-        y_locations := {}
-        Loop, % y_splits {
-            y_locations[A_Index] := dimensions.top + y_mult*(dimensions.height / (2 * y_splits))
-            y_mult += (2*y_splits - 2*initial_y_mult) / (y_splits - 1)
-        }
-
-        x_splits := (this.key_order.Length() // y_splits)
-        x_mult := this.settings.x_mult
-        initial_x_mult := x_mult
-        x_values := []
-        x_locations := {}
-        Loop, % x_splits {
-            x_locations[A_Index] := dimensions.left + x_mult*(dimensions.width / (4 * x_splits))
-            x_mult += (4*x_splits - 2*initial_x_mult) / (x_splits - 1)
-        }
-
-        mark_array := {}
+    GenerateMarks(dimensions) {
         i = 1
-        for key, y_val in y_locations {
-            for key, x_val in x_locations {
-                mark_array[this.key_order[i]] := {x: x_val, y: y_val}
-                i++
+        mark_array := {}
+        Loop, % dimensions.Length() {
+            x_splits := (this.key_order.Length() // Min(dimensions.Length(), this.key_order.Length() // this.settings.y_splits)) // this.settings.y_splits
+
+            y_locations := this.SplitRange(dimensions[A_Index].top, dimensions[A_Index].height - 2*this.settings.starting_height, this.settings.y_splits)
+            x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width, x_splits)
+
+            for key, y_val in y_locations {
+                for key, x_val in x_locations {
+                    mark_array[this.key_order[i]] := {x: x_val + this.settings.starting_width, y: y_val + this.settings.starting_height}
+                    i++
+                }
             }
         }
-
         Return mark_array
     }
 
+    SplitRange(range_start, range_end, splits) {
+        split_array := [range_start]
+        abs_range := (range_start + range_end) - range_start
+        Loop, % splits - 1 {
+            split_array.Push(range_start + (A_Index) * (abs_range / (splits - 1)))
+        }
+        return split_array
+    }
 
     ReadSettings() {
         IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS
@@ -339,7 +323,7 @@ Class Marks
     }
 
     ReadKeyOrder() {
-        IniRead, raw_key_order, settings.ini, MARK_ORDER, key_order , q|w|e|r|a|s|d|z|x|c|u|i|o|p|j|k|l|m|,|.
+        IniRead, raw_key_order, settings.ini, MARK_ORDER, key_order , q|w|e|r|t|y|u|i|o|p|[|]|a|s|d|f|g|h|j|k|l|;|z|x|c|v|b|n|m|,|.|/
         key_order := []
         Loop, Parse, raw_key_order, |
         {
@@ -361,7 +345,7 @@ Class Marks
         return saved_marks
     }
 
-    GetScreenDimensions() { 
+    GetScreenDimensions() {
         SysGet, num_monitors, MonitorCount
         screen_dimension := {0: {top: 0, bottom: 0, left: 0, right: 0}}
         loop % num_monitors {
@@ -384,19 +368,28 @@ Class Marks
         }
         screen_dimension[0].width := screen_dimension[0].right - screen_dimension[0].left
         screen_dimension[0].height := screen_dimension[0].bottom - screen_dimension[0].top
-        Return screen_dimension 
+        Return screen_dimension
     }
 
     ShowGUI(array_to_use:="usage_marks") {
         Gui, Color, EEAA99
-        Gui, Font, S10 w500, Consolas ; todo user setting
+        Gui, Font, % "S" this.settings.font_size, % this.settings.font
         For key, value in this.mark_arrays[array_to_use]{
+            if (key == "'") {
+                last_x_position := value.x - 5 - this.screen_dimension[0].left
+                last_y_position := value.y - 5 - this.screen_dimension[0].top
+                continue
+            }
             StringUpper, key, key
-            x_position := value.x - 5  - this.screen_dimension[0].left ; because 0, 0 is always the top left of the gui but the mark position can be negative
-            y_position := value.y - 5  - this.screen_dimension[0].top
+            x_position := value.x - 5 - this.screen_dimension[0].left ; because 0, 0 is always the top left of the gui but the mark position can be negative
+            y_position := value.y - 5 - this.screen_dimension[0].top
             Gui, Add, button, x%x_position% y%y_position%, %key%
-        } ; TODO make ' mark appear over any other marks
-        
+        } 
+        ; this makes ' mark appear over any other marks
+        if last_x_position {
+            Gui, Add, button, x%last_x_position% y%last_y_position%, '
+        }
+
         Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is for WinSet
         WinSet, TransColor, EEAA99 ; makes all EEAA99 colors invisible
         Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].width " h" this.screen_dimension[0].height " NoActivate"
@@ -475,7 +468,7 @@ Class Marks
             }
         }
         this.mark_arrays[array_to_use][mark_to_use].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
-        this.mark_arrays[array_to_use]["'"] := { x : original_x, y : original_y}
+        this.mark_arrays["usage_marks"]["'"] := { x : original_x, y : original_y}
     }
 
     GoToMark(array_to_use:="usage_marks") {
@@ -484,9 +477,11 @@ Class Marks
         ClearModifiers()
         Input, chosen_mark, L1 E, {esc}
         if (IsNum(chosen_mark)) {
+            this.HideGUI()
             this.GoToMark(chosen_mark)
+            Return
         }
-        this.MoveCursor(chosen_mark)
+        this.MoveCursor(chosen_mark, array_to_use)
         Sleep, this.settings.mark_move_delay
         this.HideGUI()
         awaiting_input = 0
