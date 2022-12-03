@@ -13,8 +13,8 @@ Process, Priority,, H
 ;;
 
 DetectSettingsFile()
-global mouse_settings := ReadMouseSettings()
 Marks := new Marks
+MouseController := new MouseControls
 
 ;; ## Mappings
 ;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
@@ -24,15 +24,15 @@ global awaiting_input = 0 ; used to disable hotkeys while setting or going to ma
 LShift & RShift::CapsLock
 
 *CapsLock:: ; -------------------
-    SetTimer, MoveCursor, % mouse_settings.mouse_interval
-    SetTimer, SmoothScrollWheel, % mouse_settings.scroll_interval
-return
+    MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+    MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+    Return
 
 *CapsLock up:: ; -------------------
-SetTimer, MoveCursor, off
-SetTimer, SmoothScrollWheel, off
-ClearModifiers()
-return
+    MouseController.SetTimer("cursor_timer", "off")
+    MouseController.SetTimer("scroll_wheel_timer", "off")
+    ClearModifiers()
+    Return
 
 #If, GetKeyState("CapsLock", "P") and awaiting_input == 0 ; ------------------------
 
@@ -81,8 +81,8 @@ return
     sc013::Delete
     sc014::Esc
     sc015::PgUp
-    sc016::Return ; change scrollwheel keys in the SmoothScrollWheel function
-    sc017::Return ; change mouse keys in the MouseMove function
+    sc016::Return ; change scrollwheel keys in the MoveScrollWheel method
+    sc017::Return ; change mouse keys in the MoveCursor method
     sc018::Return
     sc019::^Delete
     sc01a::^+Tab
@@ -158,9 +158,6 @@ return
 ;;
 ;;
 
-;; ### Misc
-;;
-
 ; release modifiers if they were still being held down when extend was released
 ClearModifiers() {
     If GetKeyState("sc032", "P")
@@ -181,61 +178,6 @@ IsNum(str) {
     return false
 }
 
-;; ### Mouse Functions
-;; inspired by https://github.com/4strid/mouse-control.autohotkey
-;; these would probably be better as a class
-
-global velocity_x := 0
-global velocity_y := 0
-
-; Scroll Wheel -function and time is smoother than mapping directly
-SmoothScrollWheel(){
-    if (awaiting_input == 1)
-        return
-    else if GetKeyState("sc016", "P") {
-        if GetKeyState("Shift", "P")
-            send {WheelLeft}
-        else
-            send {WheelUp}
-    }
-    else if GetKeyState("sc018", "P") {
-        if GetKeyState("Shift", "P")
-            send {WheelRight}
-        else
-            send {WheelDown}
-    }
-}
-
-Accelerate(velocity, pos, neg) {
-    new_velocity := velocity + mouse_settings.acceleration * (pos + neg)
-    if (Abs(new_velocity) <= Abs(velocity)) {
-        return 0
-    }
-    else {
-        return (pos + neg) * Min(Abs(new_velocity), Abs(mouse_settings.top_speed))
-    }
-}
-
-MoveCursor() {
-    if (awaiting_input == 1)
-        return
-
-    up := 0 - GetKeyState("sc017", "P")
-    left := 0 - GetKeyState("sc024", "P")
-    down := 0 + GetKeyState("sc025", "P")
-    right := 0 + GetKeyState("sc026", "P")
-
-    velocity_x := Accelerate(velocity_x, left, right)
-    velocity_y := Accelerate(velocity_y, up, down)
-
-    RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
-    MouseMove, %velocity_x%, %velocity_y%, 0, R
-    DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
-}
-
-;; ### Settings functions
-;;
-
 DetectSettingsFile() {
     if not FileExist("settings.ini") {
         FileCopy, default_settings.ini, settings.ini, 0
@@ -254,19 +196,7 @@ DetectSettingsFile() {
     return
 }
 
-ReadMouseSettings() {
-    IniRead, raw_mouse_settings, settings.ini, MOUSE_SETTINGS
-    mouse_settings := {}
-    Loop, Parse, raw_mouse_settings, "`n"
-    {
-        Array := StrSplit(A_LoopField, "=")
-        mouse_settings[Array[1]] := Array[2]
-    }
-    ; normalize acceleration and top_speed for mouse_interval - TODO this didn't work very well
-    ; mouse_settings["acceleration"] := mouse_settings["acceleration"] // (1000 / mouse_settings["mouse_interval"])
-    ; mouse_settings["top_speed"] := mouse_settings["top_speed"] // (1000 / mouse_settings["mouse_interval"])
-    return mouse_settings
-}
+
 
 ; 
 ; to add to class
@@ -321,6 +251,85 @@ GenerateMarks() {
 ;; ## Classes
 ;;
 ;;
+
+Class MouseControls
+{
+;; inspired by https://github.com/4strid/mouse-control.autohotkey
+    __New() {
+        this.settings := this.ReadMouseSettings()
+        this.velocity_x := 0
+        this.velocity_y := 0
+        this.scroll_wheel_timer := ObjBindMethod(this, "MoveScrollWheel")
+        this.cursor_timer := ObjBindMethod(this, "MoveCursor")
+    }
+
+    SetTimer(timer_id, period) {
+		timer := this[timer_id]
+		SetTimer % timer, % period
+    }
+
+    ReadMouseSettings() {
+        IniRead, raw_mouse_settings, settings.ini, MOUSE_SETTINGS
+        mouse_settings := {}
+        Loop, Parse, raw_mouse_settings, "`n"
+        {
+            Array := StrSplit(A_LoopField, "=")
+            mouse_settings[Array[1]] := Array[2]
+        }
+        ; normalize acceleration and top_speed for mouse_interval - TODO this didn't work very well
+        ; mouse_settings["acceleration"] := mouse_settings["acceleration"] // (1000 / mouse_settings["mouse_interval"])
+        ; mouse_settings["top_speed"] := mouse_settings["top_speed"] // (1000 / mouse_settings["mouse_interval"])
+        return mouse_settings
+    }
+
+    ; Scroll Wheel -function and time is smoother than mapping directly
+    MoveScrollWheel(){
+        if (awaiting_input == 1)
+            return
+        else if GetKeyState("sc016", "P") {
+            if GetKeyState("Shift", "P")
+                send {WheelLeft}
+            else
+                send {WheelUp}
+        }
+        else if GetKeyState("sc018", "P") {
+            if GetKeyState("Shift", "P")
+                send {WheelRight}
+            else
+                send {WheelDown}
+        }
+    }
+
+
+    MoveCursor() {
+        if (awaiting_input == 1)
+            return
+
+        up := 0 - GetKeyState("sc017", "P")
+        left := 0 - GetKeyState("sc024", "P")
+        down := 0 + GetKeyState("sc025", "P")
+        right := 0 + GetKeyState("sc026", "P")
+
+        this.velocity_x := this.Accelerate(this.velocity_x, left, right)
+        this.velocity_y := this.Accelerate(this.velocity_y, up, down)
+        ; MsgBox, % this.velocity_x
+
+
+        RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
+        MouseMove, this.velocity_x, this.velocity_y, 0, R
+        DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
+    }
+
+    Accelerate(velocity, pos, neg) {
+        new_velocity := velocity + this.settings.acceleration * (pos + neg)
+        if (Abs(new_velocity) <= Abs(velocity)) {
+            return 0
+        }
+        else {
+            return (pos + neg) * Min(Abs(new_velocity), Abs(this.settings.top_speed))
+        }
+    }
+}
 
 Class Marks
 {
