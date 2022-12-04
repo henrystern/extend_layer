@@ -340,6 +340,7 @@ Class Marks
         {
             Array := StrSplit(A_LoopField, "=")
             coords := StrSplit(Array[2], "|")
+            Array[1] := StrReplace(Array[1], "usage_mark-") ; necessary because otherwise ini wouldn't work for [, ], and ;
             saved_marks[Array[1]] := {x:coords[1], y:coords[2], priority:this.settings.mark_priority, time_set:0}
         }
         return saved_marks
@@ -421,7 +422,7 @@ Class Marks
                 this.mark_arrays.usage_marks[mark_to_use].time_set := A_TickCount
             }
             if (user_set == 1) {
-                IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % mark_to_use ; TODO iniwrite doesn't work properly for [, ], and ;
+                IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % "usage_mark-" mark_to_use
                 ToolTip, Set Mark at %mark_to_use%
                 Sleep, % this.settings.mark_move_delay
                 ToolTip
