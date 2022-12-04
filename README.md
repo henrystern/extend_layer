@@ -11,7 +11,7 @@ This script makes the CapsLock key the most useful key on the keyboard, by repur
 ### Setup
 1. First clone the repository or download and extract the zip file.
 1. If you have AHK installed run extend_layer.ahk
-1. Otherwise run extend_layer.exe
+1. Otherwise run extend_layer.exe (windows will warn you that the .exe is unsigned)
 
 ### Run on Startup
 * Win+r 'shell:startup'
