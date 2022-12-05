@@ -26,13 +26,13 @@ LShift & RShift::CapsLock
 *CapsLock:: ; -------------------
     MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
     MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
-Return
+    Return
 
 *CapsLock up:: ; -------------------
-MouseController.SetTimer("cursor_timer", "off")
-MouseController.SetTimer("scroll_wheel_timer", "off")
-ClearModifiers()
-Return
+    MouseController.SetTimer("cursor_timer", "off")
+    MouseController.SetTimer("scroll_wheel_timer", "off")
+    ClearModifiers()
+    Return
 
 #If, GetKeyState("CapsLock", "P") and awaiting_input == 0 ; ------------------------
 
@@ -120,7 +120,7 @@ Return
         if (SessionMarks.settings.auto_mark == 1 and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
             SessionMarks.SetMark()
         }
-    Return
+        Return
     sc02f::^v
     sc030::MButton
     sc031::RButton
@@ -132,7 +132,7 @@ Return
         ClearModifiers()
         SessionMarks.SetMark(Marks.settings.mark_priority, 1)
         awaiting_input = 0
-    Return
+        Return
 
     ;sc01c::
     sc039::Enter
@@ -161,6 +161,7 @@ ClearModifiers() {
         send {LButton up}
     If GetKeyState("sc030", "P")
         send {RButton up}
+    Return
 }
 
 IsNum(str) {
@@ -200,11 +201,13 @@ Class MouseControls
         this.velocity_y := 0
         this.scroll_wheel_timer := ObjBindMethod(this, "MoveScrollWheel")
         this.cursor_timer := ObjBindMethod(this, "MoveCursor")
+        Return
     }
 
     SetTimer(timer_id, period) {
         timer := this[timer_id]
         SetTimer % timer, % period
+        Return
     }
 
     ReadMouseSettings() {
@@ -234,6 +237,7 @@ Class MouseControls
             else
                 send {WheelDown}
         }
+        Return
     }
 
     MoveCursor() {
@@ -251,6 +255,7 @@ Class MouseControls
         RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
         MouseMove, this.velocity_x, this.velocity_y, 0, R
         DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
+        Return
     }
 
     Accelerate(velocity, pos, neg) {
@@ -281,6 +286,7 @@ Class Marks
         monitor_dimensions := this.screen_dimension.Clone()
         monitor_dimensions.Delete(0)
         this.mark_arrays.all_monitors := this.GenerateMarks(monitor_dimensions)
+        Return
     }
 
     GenerateMarks(dimensions) {
@@ -394,10 +400,12 @@ Class Marks
         Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is for WinSet
         WinSet, TransColor, EEAA99 ; makes all EEAA99 colors invisible
         Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].width " h" this.screen_dimension[0].height " NoActivate"
+        Return
     }
 
     HideGUI() {
         Gui, destroy
+        Return
     }
 
     SetMark(mark_priority := 0, user_set := 0) {
@@ -428,6 +436,7 @@ Class Marks
                 ToolTip
             }
         }
+        Return
     }
 
     NearbyMark(x, y, x_threshold:=50, y_threshold:=50) {
@@ -470,6 +479,7 @@ Class Marks
         }
         this.mark_arrays[array_to_use][mark_to_use].priority += 5 ; protects the mark from being overwritten by AutoMark if it is frequently used
         this.mark_arrays["usage_marks"]["'"] := { x : original_x, y : original_y}
+        Return
     }
 
     GoToMark(array_to_use:="usage_marks") {
