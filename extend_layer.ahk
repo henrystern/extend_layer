@@ -151,17 +151,27 @@ LShift & RShift::CapsLock
 
 ; release modifiers if they were still being held down when extend was released
 ClearModifiers() {
-    If GetKeyState("sc032", "P")
+    If GetKeyState("Shift")
         send {Shift up}
-    If GetKeyState("sc033", "P")
+    If GetKeyState("Ctrl")
         send {Ctrl up}
-    If GetKeyState("sc034", "P")
+    If GetKeyState("Alt")
         send {Alt up}
-    If GetKeyState("sc02e", "P")
+    If GetKeyState("sc022e", "P")
         send {LButton up}
     If GetKeyState("sc030", "P")
         send {RButton up}
     Return
+    ; If GetKeyState("sc032", "P") ; this method had occasional stuck modifiers TODO check if fixed
+    ;     send {Shift up}
+    ; If GetKeyState("sc033", "P")
+    ;     send {Ctrl up}
+    ; If GetKeyState("sc034", "P")
+    ;     send {Alt up}
+    ; If GetKeyState("sc02e", "P")
+    ;     send {LButton up}
+    ; If GetKeyState("sc030", "P")
+    ;     send {RButton up}
 }
 
 IsNum(str) {
