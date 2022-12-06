@@ -161,16 +161,6 @@ ClearModifiers() {
         send {LButton up}
     If GetKeyState("sc030", "P")
         send {RButton up}
-    ; If GetKeyState("sc032", "P") ; this method had occasional stuck modifiers TODO check if fixed
-    ;     send {Shift up}
-    ; If GetKeyState("sc033", "P")
-    ;     send {Ctrl up}
-    ; If GetKeyState("sc034", "P")
-    ;     send {Alt up}
-    ; If GetKeyState("sc02e", "P")
-    ;     send {LButton up}
-    ; If GetKeyState("sc030", "P")
-    ;     send {RButton up}
     Return
 }
 
