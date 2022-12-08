@@ -254,7 +254,7 @@ Class MouseControls
         ; store per-monitor DPI
         RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
         MouseMove, this.velocity_x, this.velocity_y, 0, R
-        ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
+        ; restore previous DPI awareness -- this is necessary for mousemove to work as expected when windows scaling != 100%
         DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") 
     }
 
