@@ -26,3 +26,14 @@ Complete navigation and mouse control becomes accessible without ever having to 
 * Monitor grid marks can be accessed from both Ext+~ and Ext+Shift+'
 * While waiting for a mark, pressing a number key will show you a grid of marks for that monitor (1 being primary).
 * If you notice underlying key presses slipping through, especially on rapid or combined keypresses, you can try changing USB ports, using a PS/2 adapter, or reducing mouse intervals
+
+### Benefits Over Other Extend Layers
+There were a number of things that prompted me to write this script instead of using EPKL, or the other extend layers.
+1. Mouse support felt like an afterthought.
+    * Extend layers exist to save you from having to move off the typing position. 
+    * They generally succeed when it comes to keyboard controls but they are clearly not intended to be capable of replacing the mouse. 
+    * This script can work as a complete mouse replacement.
+2. Arrow keys work better under the left hand.
+    * Somehow the extend layer convention has become i, j, k, l arrow keys. 
+    * This makes arrow keys unaccessible when the right hand is on the mouse. 
+    * This script's layout (arrow keys under w, a, s, d) means that no matter if your right hand is on the mouse or keyboard, you always have both mouse and keyboard navigation control.
