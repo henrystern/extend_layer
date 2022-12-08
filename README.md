@@ -11,7 +11,7 @@ Complete navigation and mouse control becomes accessible without ever having to 
 
 ### Setup
 1. Clone the repository or download and extract the zip file.
-1. If you have AHK installed run extend_layer.ahk
+1. If you have AHK V1.1 installed run extend_layer.ahk
 1. Otherwise run extend_layer.exe (windows will warn you that the .exe is unsigned)
 
 ### Run on Startup
