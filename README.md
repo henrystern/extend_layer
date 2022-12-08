@@ -1,16 +1,17 @@
 ### Overview
 ![Layer Image](https://github.com/henrystern/extend_layer/blob/main/defaults.png?raw=true)
 ### Purpose
-This script makes the CapsLock key the most useful key on the keyboard, by repurposing it as the gateway to complete navigation and mouse control.
+This script turns the CapsLock key into a new modifier (like shift, or ctrl), that when held down provides access to the controls shown above.
+Complete navigation and mouse control becomes accessible without ever having to move your hands away from the home row. 
 
 ### Features
   * Intuitive and balanced layout
   * Smooth and configurable mouse movement
-  * Vim style marks to jump between cursor locations
+  * Marks to jump between cursor locations
 
 ### Setup
-1. First clone the repository or download and extract the zip file.
-1. If you have AHK installed run extend_layer.ahk
+1. Clone the repository or download and extract the zip file.
+1. If you have AHK V1.1 installed run extend_layer.ahk
 1. Otherwise run extend_layer.exe (windows will warn you that the .exe is unsigned)
 
 ### Run on Startup
