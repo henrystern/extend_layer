@@ -51,6 +51,8 @@ LShift & RShift::CapsLock
     ;F11::
     ;F12::
 
+    ; I use scancodes so it works regardless of keyboard layout
+
     ;;  ### Row 1 - number row
     ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
     ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
@@ -249,9 +251,11 @@ Class MouseControls
         this.velocity_x := this.Accelerate(this.velocity_x, left, right)
         this.velocity_y := this.Accelerate(this.velocity_y, up, down)
 
-        RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") ; store per-monitor DPI
+        ; store per-monitor DPI
+        RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
         MouseMove, this.velocity_x, this.velocity_y, 0, R
-        DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
+        ; restore previous DPI awareness -- not sure if this does anything or if I'm imagining it, keeping it for people with different monitor setups
+        DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") 
     }
 
     Accelerate(velocity, pos, neg) {
@@ -270,7 +274,7 @@ Class Marks
     __New() {
         this.settings := this.ReadSettings()
         this.key_order := this.ReadKeyOrder()
-        this.screen_dimension := this.GetScreenDimensions() ; get dimensions of all monitors and the overall workspace
+        this.screen_dimension := this.GetScreenDimensions()
         this.mark_arrays := {}
         this.mark_arrays.usage_marks := this.RestoreMarks()
         for mon_number, value in this.screen_dimension {
@@ -335,6 +339,7 @@ Class Marks
     }
 
     RestoreMarks() {
+        ; load saved marks from previous sessions
         IniRead, raw_saved_marks, saved_marks.ini, MARKS
         saved_marks := {}
         Loop, Parse, raw_saved_marks, "`n"
@@ -348,6 +353,8 @@ Class Marks
     }
 
     GetScreenDimensions() {
+        ; gets dimensions for the overall screen area and the individual dimensions for each monitor
+        ; returns associative array with 0 for overall screen 
         SysGet, num_monitors, MonitorCount
         screen_dimension := {0: {top: 0, bottom: 0, left: 0, right: 0}}
         loop % num_monitors {
@@ -383,7 +390,8 @@ Class Marks
                 continue
             }
             StringUpper, key, key
-            x_position := value.x - 5 - this.screen_dimension[0].left ; because 0, 0 is always the top left of the gui but the mark position can be negative
+            ; these adjustments are because 0, 0 is always the top left of the gui but the mark position can be negative
+            x_position := value.x - 5 - this.screen_dimension[0].left 
             y_position := value.y - 5 - this.screen_dimension[0].top
             Gui, Add, button, x%x_position% y%y_position%, %key%
         } 
@@ -431,9 +439,9 @@ Class Marks
         }
     }
 
-    NearbyMark(x, y, x_threshold:=50, y_threshold:=50) {
+    NearbyMark(x, y) {
         For key, value in this.mark_arrays.usage_marks {
-            if (abs(x - value.x) < x_threshold and abs(y - value.y) < y_threshold) { ; if the approximate location is already marked then just update the location of that mark
+            if (abs(x - value.x) < this.settings.x_threshold and abs(y - value.y) < this.settings.y_threshold) { ; if the approximate location is already marked then just update the location of that mark
                 if (key != "'") { ; should still create mark if the close key is the last jump mark
                     Return key
                 }
@@ -461,7 +469,9 @@ Class Marks
         MouseGetPos, prev_x, prev_y
         original_x := prev_x
         original_y := prev_y
-        While (prev_x != this.mark_arrays[array_to_use][mark_to_use].x or prev_y != this.mark_arrays[array_to_use][mark_to_use].y) { ; looping brute forces through monitor walls without having to compare monitor dimensions
+        ; looping brute forces through monitor walls without having to compare monitor dimensions
+        ; not very elegant but seems fast enough
+        While (prev_x != this.mark_arrays[array_to_use][mark_to_use].x or prev_y != this.mark_arrays[array_to_use][mark_to_use].y) { 
             MouseMove, this.mark_arrays[array_to_use][mark_to_use].x, this.mark_arrays[array_to_use][mark_to_use].y, 0
             MouseGetPos, prev_x, prev_y
             if (A_Index == 15) {
