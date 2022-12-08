@@ -289,6 +289,7 @@ Class Marks
     }
 
     GenerateMarks(dimensions) {
+        ; TODO this generates incorrect marks if screen scaling != 100
         i = 1
         mark_array := {}
         Loop, % dimensions.Length() {
