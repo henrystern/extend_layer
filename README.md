@@ -28,7 +28,7 @@ Complete navigation and mouse control becomes accessible without ever having to 
 * If you notice underlying key presses slipping through, especially on rapid or combined keypresses, you can try changing USB ports, using a PS/2 adapter, or reducing mouse intervals
 
 ### Benefits Over Other Extend Layers
-There were a number of things that prompted me to write this script instead of using EPKL, or the other extend layers.
+There were two main reasons I wrote this script instead of using EPKL, or any of the other extend layers.
 1. Mouse support felt like an afterthought.
     * Extend layers exist to save you from having to move off the typing position. 
     * They generally succeed when it comes to keyboard controls but they are clearly not intended to be capable of replacing the mouse. 
