@@ -5,7 +5,7 @@ This script turns the CapsLock key into a new modifier (like shift, or ctrl), th
 Complete navigation and mouse control becomes accessible without ever having to move your hands away from the home row. 
 
 ### Features
-  * Intuitive and balanced layout
+  * Intuitive layout
   * Smooth and configurable mouse movement
   * Marks to jump between cursor locations
 
