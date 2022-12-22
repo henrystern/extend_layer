@@ -35,5 +35,5 @@ There were two main reasons I wrote this script instead of using EPKL, or any of
     * This script can work as a complete mouse replacement.
 2. Arrow keys work better under the left hand.
     * Somehow the extend layer convention has become i, j, k, l arrow keys. 
-    * This makes arrow keys unaccessible when the right hand is on the mouse. 
+    * This makes arrow keys inaccessible when the right hand is on the mouse. 
     * This script's layout (arrow keys under w, a, s, d) means that no matter if your right hand is on the mouse or keyboard, you always have both mouse and keyboard navigation control.
