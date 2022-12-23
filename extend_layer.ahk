@@ -24,48 +24,31 @@ global awaiting_input = 0 ; used to disable hotkeys while setting or going to ma
 LShift & RShift::CapsLock
 
 extend_layer_active = 0
-; This is for pure toggle behaviour
+; this is for tap toggle behaviour
 *CapsLock:: ; -------------------
-    if (extend_layer_active == 0) {
-        extend_layer_active = 1
-        MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-        MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
-        ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
-    }
-    else {
-        extend_layer_active = 0
-        MouseController.SetTimer("cursor_timer", "off")
-        MouseController.SetTimer("scroll_wheel_timer", "off")
-        ClearModifiers()
-        ToolTip
-    }
-    Return
-
-; ; this is for tap toggle behaviour
-; *CapsLock:: ; -------------------
-;         if (extend_layer_active == 0) {
-;             extend_layer_active = 1
-;             MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-;             MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
-;             KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
-;             if (A_TimeSinceThisHotkey < 100) { ; only toggle on a capslock press
-;                 ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
-;             }
-;             else {
-;                 extend_layer_active = 0
-;                 MouseController.SetTimer("cursor_timer", "off")
-;                 MouseController.SetTimer("scroll_wheel_timer", "off")
-;                 ClearModifiers()
-;             }
-;         }
-;         else {
-;             extend_layer_active = 0
-;             MouseController.SetTimer("cursor_timer", "off")
-;             MouseController.SetTimer("scroll_wheel_timer", "off")
-;             ClearModifiers()
-;             ToolTip
-;         }
-;         Return
+        if (extend_layer_active == 0) {
+            extend_layer_active = 1
+            MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+            MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+            KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
+            if (A_TimeSinceThisHotkey < 125) { ; only toggle on a capslock press -- change the number to adjust timing
+                ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+            }
+            else {
+                extend_layer_active = 0
+                MouseController.SetTimer("cursor_timer", "off")
+                MouseController.SetTimer("scroll_wheel_timer", "off")
+                ClearModifiers()
+            }
+        }
+        else {
+            extend_layer_active = 0
+            MouseController.SetTimer("cursor_timer", "off")
+            MouseController.SetTimer("scroll_wheel_timer", "off")
+            ClearModifiers()
+            ToolTip
+        }
+        Return
 
 #If, extend_layer_active == 1 and awaiting_input == 0 ; ------------------------
 
