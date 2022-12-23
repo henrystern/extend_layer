@@ -48,7 +48,7 @@ extend_layer_active = 0
             MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
             MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
             KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
-            if (A_TimeSinceThisHotkey < 200) { ; only toggle on a capslock press
+            if (A_TimeSinceThisHotkey < 100) { ; only toggle on a capslock press
                 ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
             }
             else {
