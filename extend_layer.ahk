@@ -39,7 +39,7 @@ Hold:
     Return
 
 ; this is for pure toggle behaviour
-HardToggle:
+PureToggle:
     if (extend_layer_active == 0) {
         extend_layer_active = 1
         MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
