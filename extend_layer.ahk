@@ -13,44 +13,80 @@ Process, Priority,, H
 ;;
 
 DetectSettingsFile()
+trigger_settings := ReadSettings("TRIGGER_SETTINGS")
 SessionMarks := new Marks
 MouseController := new MouseControls
 
-;; ## Mappings
-;; Change 'CapsLock' in the lines marked ----- to change the extend trigger
+;; ## Trigger Configuration
+;;
+
+Hotkey, % "*" trigger_settings.extend_key, % trigger_settings.trigger_mode
+
 
 global awaiting_input = 0 ; used to disable hotkeys while setting or going to mark
+extend_layer_active = 0 ; used to toggle extend mode
 
-LShift & RShift::CapsLock
+; this is for hold behaviour
+Hold:
+    extend_layer_active = 1
+    MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+    MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+    KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
+    extend_layer_active = 0
+    MouseController.SetTimer("cursor_timer", "off")
+    MouseController.SetTimer("scroll_wheel_timer", "off")
+    ClearModifiers()
+    Return
 
-extend_layer_active = 0
+; this is for pure toggle behaviour
+HardToggle:
+    if (extend_layer_active == 0) {
+        extend_layer_active = 1
+        MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+        MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+        ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+    }
+    else {
+        extend_layer_active = 0
+        MouseController.SetTimer("cursor_timer", "off")
+        MouseController.SetTimer("scroll_wheel_timer", "off")
+        ClearModifiers()
+        ToolTip
+    }
+    Return
+
 ; this is for tap toggle behaviour
-*CapsLock:: ; -------------------
-        if (extend_layer_active == 0) {
-            extend_layer_active = 1
-            MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-            MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
-            KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
-            if (A_TimeSinceThisHotkey < 100) { ; only toggle on a capslock press -- change the number to adjust timing
-                ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
-            }
-            else {
-                extend_layer_active = 0
-                MouseController.SetTimer("cursor_timer", "off")
-                MouseController.SetTimer("scroll_wheel_timer", "off")
-                ClearModifiers()
-            }
+TapToggle:
+    if (extend_layer_active == 0) {
+        extend_layer_active = 1
+        MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+        MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+        KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
+        if (A_TimeSinceThisHotkey < trigger_settings.tap_sensitivity) { ; only toggle on a trigger press -- change the number to adjust timing
+            ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
         }
         else {
             extend_layer_active = 0
             MouseController.SetTimer("cursor_timer", "off")
             MouseController.SetTimer("scroll_wheel_timer", "off")
             ClearModifiers()
-            ToolTip
         }
-        Return
+    }
+    else {
+        extend_layer_active = 0
+        MouseController.SetTimer("cursor_timer", "off")
+        MouseController.SetTimer("scroll_wheel_timer", "off")
+        ClearModifiers()
+        ToolTip
+    }
+    Return
 
-#If, extend_layer_active == 1 and awaiting_input == 0 ; ------------------------
+;; ## Layer Mappings
+;;
+
+LShift & RShift::CapsLock
+
+#If, extend_layer_active == 1 and awaiting_input == 0
 
     ;;  ### Row 0 - function keys
 
@@ -206,6 +242,17 @@ DetectSettingsFile() {
     return
 }
 
+ReadSettings(settings_category) {
+    IniRead, raw_settings, settings.ini, % settings_category
+    settings := {}
+    Loop, Parse, raw_settings, "`n"
+    {
+        Array := StrSplit(A_LoopField, "=")
+        settings[Array[1]] := Array[2]
+    }
+    return settings 
+}
+
 ;; ## Classes
 ;;
 ;;
@@ -214,7 +261,7 @@ Class MouseControls
 {
     ;; inspired by https://github.com/4strid/mouse-control.autohotkey
     __New() {
-        this.settings := this.ReadMouseSettings()
+        this.settings := ReadSettings("MOUSE_SETTINGS")
         this.velocity_x := 0
         this.velocity_y := 0
         this.scroll_wheel_timer := ObjBindMethod(this, "MoveScrollWheel")
@@ -224,17 +271,6 @@ Class MouseControls
     SetTimer(timer_id, period) {
         timer := this[timer_id]
         SetTimer % timer, % period
-    }
-
-    ReadMouseSettings() {
-        IniRead, raw_mouse_settings, settings.ini, MOUSE_SETTINGS
-        mouse_settings := {}
-        Loop, Parse, raw_mouse_settings, "`n"
-        {
-            Array := StrSplit(A_LoopField, "=")
-            mouse_settings[Array[1]] := Array[2]
-        }
-        return mouse_settings
     }
 
     ; Scroll Wheel -function and time is smoother than mapping directly
@@ -288,7 +324,7 @@ Class MouseControls
 Class Marks
 {
     __New() {
-        this.settings := this.ReadSettings()
+        this.settings := ReadSettings("MARK_SETTINGS")
         this.key_order := this.ReadKeyOrder()
         this.screen_dimension := this.GetScreenDimensions()
         this.mark_arrays := {}
@@ -331,17 +367,6 @@ Class Marks
             split_array.Push(range_start + (A_Index) * (abs_range / (splits - 1)))
         }
         return split_array
-    }
-
-    ReadSettings() {
-        IniRead, raw_mark_settings, settings.ini, MARK_SETTINGS
-        mark_settings := {}
-        Loop, Parse, raw_mark_settings, "`n"
-        {
-            Array := StrSplit(A_LoopField, "=")
-            mark_settings[Array[1]] := Array[2]
-        }
-        return mark_settings
     }
 
     ReadKeyOrder() {
