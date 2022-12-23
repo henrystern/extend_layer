@@ -30,7 +30,8 @@ extend_layer_active = 0
         MouseController.SetTimer("cursor_timer", "off")
         MouseController.SetTimer("scroll_wheel_timer", "off")
         ClearModifiers()
-        ToolTip, Extend_Layer Off, % A_ScreenWidth / 2, A_ScreenHeight 
+        ; ToolTip, Extend_Layer Off, % A_ScreenWidth / 2, A_ScreenHeight 
+        ToolTip
     }
     else {
         extend_layer_active = 1
