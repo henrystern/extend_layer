@@ -61,7 +61,7 @@ TapToggle:
         extend_layer_active = 1
         MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
         MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
-        KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
+        KeyWait % SubStr(A_ThisHotkey, 2)
         if (A_PriorKey == trigger_settings.extend_key and A_TimeSinceThisHotkey < trigger_settings.tap_sensitivity) { ; only toggle on a trigger press -- change the number to adjust timing
             ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
         }
@@ -73,6 +73,7 @@ TapToggle:
         }
     }
     else {
+        KeyWait % SubStr(A_ThisHotkey, 2)
         extend_layer_active = 0
         MouseController.SetTimer("cursor_timer", "off")
         MouseController.SetTimer("scroll_wheel_timer", "off")
