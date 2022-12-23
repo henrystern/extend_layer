@@ -23,18 +23,24 @@ global awaiting_input = 0 ; used to disable hotkeys while setting or going to ma
 
 LShift & RShift::CapsLock
 
+extend_layer_active = 0
 *CapsLock:: ; -------------------
-    MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-    MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+    if (extend_layer_active == 1) {
+        extend_layer_active = 0
+        MouseController.SetTimer("cursor_timer", "off")
+        MouseController.SetTimer("scroll_wheel_timer", "off")
+        ClearModifiers()
+        ToolTip, Extend_Layer Off, % A_ScreenWidth / 2, A_ScreenHeight 
+    }
+    else {
+        extend_layer_active = 1
+        MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+        MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+        ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+    }
     Return
 
-*CapsLock up:: ; -------------------
-    MouseController.SetTimer("cursor_timer", "off")
-    MouseController.SetTimer("scroll_wheel_timer", "off")
-    ClearModifiers()
-    Return
-
-#If, GetKeyState("CapsLock", "P") and awaiting_input == 0 ; ------------------------
+#If, extend_layer_active == 1 and awaiting_input == 0 ; ------------------------
 
     ;;  ### Row 0 - function keys
 
@@ -83,9 +89,9 @@ LShift & RShift::CapsLock
     sc013::Delete
     sc014::Esc
     sc015::PgUp
-    sc016::Return ; change scrollwheel keys in the MoveScrollWheel method
-    sc017::Return ; change mouse keys in the MoveCursor method
-    sc018::Return
+    *sc016::Return ; change scrollwheel keys in the MoveScrollWheel method
+    *sc017::Return ; change mouse keys in the MoveCursor method
+    *sc018::Return
     sc019::^Delete
     sc01a::^+Tab
     sc01b::^Tab
@@ -100,9 +106,9 @@ LShift & RShift::CapsLock
     sc021::Backspace
     sc022::Appskey
     sc023::PgDn
-    sc024::Return
-    sc025::Return
-    sc026::Return
+    *sc024::Return
+    *sc025::Return
+    *sc026::Return
     sc027::^Backspace
     sc028::SessionMarks.GoToMark("usage_marks")
     +sc028::SessionMarks.GoToMark("all_monitors")
@@ -223,7 +229,7 @@ Class MouseControls
 
     ; Scroll Wheel -function and time is smoother than mapping directly
     MoveScrollWheel(){
-        if (awaiting_input == 1)
+        if (awaiting_input == 1 or extend_layer_active == 0)
             return
         else if GetKeyState("sc016", "P") {
             if GetKeyState("Shift", "P")
@@ -240,7 +246,7 @@ Class MouseControls
     }
 
     MoveCursor() {
-        if (awaiting_input == 1)
+        if (awaiting_input == 1 or extend_layer_active == 0)
             return
 
         up := 0 - GetKeyState("sc017", "P")
