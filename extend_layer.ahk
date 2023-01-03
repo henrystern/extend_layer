@@ -389,7 +389,7 @@ Class Marks
     }
 
     ReadKeyOrder() {
-        IniRead, raw_key_order, settings.ini, MARK_ORDER, key_order , q|w|e|r|t|y|u|i|o|p|[|]|a|s|d|f|g|h|j|k|l|;|z|x|c|v|b|n|m|,|.|/
+        IniRead, raw_key_order, settings.ini, MARK_ORDER, key_order , Q|W|E|R|T|Y|U|I|O|P|[|]|A|S|D|F|G|H|J|K|L|;|Z|X|C|V|B|N|M|,|.|/
         key_order := []
         Loop, Parse, raw_key_order, |
         {
@@ -450,7 +450,6 @@ Class Marks
                 last_y_position := value.y - 5 - this.screen_dimension[0].top
                 continue
             }
-            StringUpper, key, key
             ; these adjustments are because 0, 0 is always the top left of the gui but the mark position can be negative
             x_position := value.x - 5 - this.screen_dimension[0].left 
             y_position := value.y - 5 - this.screen_dimension[0].top
@@ -486,6 +485,7 @@ Class Marks
             }
         }
         if mark_to_use {
+            StringUpper, mark_to_use, mark_to_use ; uppercase reduces ambiguity
             this.mark_arrays.usage_marks[mark_to_use] := {x:cur_x, y:cur_y}
             if not nearby_mark {
                 this.mark_arrays.usage_marks[mark_to_use].priority := mark_priority
@@ -494,7 +494,7 @@ Class Marks
             if (user_set) {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % "usage_mark-" mark_to_use
                 ToolTip, Set Mark at %mark_to_use%
-                Sleep, % this.settings.mark_move_delay
+                Sleep, % 2 * this.settings.mark_move_delay
                 ToolTip
             }
         }
