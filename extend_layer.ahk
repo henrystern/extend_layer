@@ -28,20 +28,20 @@ extend_layer_active = 0 ; used to toggle extend mode
 
 ; this is for hold behaviour
 Hold:
-    extend_layer_active = ExtendLayerActivate()
+    extend_layer_active := ExtendLayerActivate()
     KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
-    extend_layer_active = ExtendLayerDeactivate()
+    extend_layer_active := ExtendLayerDeactivate()
     Return
 
 ; this is for pure toggle behaviour
 PureToggle:
     if (extend_layer_active == 0) {
-        extend_layer_active = ExtendLayerActivate()
+        extend_layer_active := ExtendLayerActivate()
         ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
     }
     else {
         KeyWait % SubStr(A_ThisHotkey, 2) ; deactivate on release trigger
-        extend_layer_active = ExtendLayerDeactivate()
+        extend_layer_active := ExtendLayerDeactivate()
         ToolTip
     }
     Return
@@ -49,18 +49,18 @@ PureToggle:
 ; this is for tap toggle behaviour
 TapToggle:
     if (extend_layer_active == 0) {
-        extend_layer_active = ExtendLayerActivate()
+        extend_layer_active := ExtendLayerActivate()
         KeyWait % SubStr(A_ThisHotkey, 2)
         if (A_PriorKey == trigger_settings.extend_key and A_TimeSinceThisHotkey < trigger_settings.tap_sensitivity) { ; only toggle on a trigger press without any other keypresses
             ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
         }
         else {
-            extend_layer_active = ExtendLayerDeactivate()
+            extend_layer_active := ExtendLayerDeactivate()
         }
     }
     else {
         KeyWait % SubStr(A_ThisHotkey, 2)
-        extend_layer_active = ExtendLayerDeactivate()
+        extend_layer_active := ExtendLayerDeactivate()
         ToolTip
     }
     Return
