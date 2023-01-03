@@ -28,29 +28,20 @@ extend_layer_active = 0 ; used to toggle extend mode
 
 ; this is for hold behaviour
 Hold:
-    extend_layer_active = 1
-    MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-    MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+    extend_layer_active = ExtendLayerActivate()
     KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
-    extend_layer_active = 0
-    MouseController.SetTimer("cursor_timer", "off")
-    MouseController.SetTimer("scroll_wheel_timer", "off")
-    ClearModifiers()
+    extend_layer_active = ExtendLayerDeactivate()
     Return
 
 ; this is for pure toggle behaviour
 PureToggle:
     if (extend_layer_active == 0) {
-        extend_layer_active = 1
-        MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-        MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+        extend_layer_active = ExtendLayerActivate()
         ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
     }
     else {
-        extend_layer_active = 0
-        MouseController.SetTimer("cursor_timer", "off")
-        MouseController.SetTimer("scroll_wheel_timer", "off")
-        ClearModifiers()
+        KeyWait % SubStr(A_ThisHotkey, 2) ; deactivate on release trigger
+        extend_layer_active = ExtendLayerDeactivate()
         ToolTip
     }
     Return
@@ -58,26 +49,18 @@ PureToggle:
 ; this is for tap toggle behaviour
 TapToggle:
     if (extend_layer_active == 0) {
-        extend_layer_active = 1
-        MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-        MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+        extend_layer_active = ExtendLayerActivate()
         KeyWait % SubStr(A_ThisHotkey, 2)
-        if (A_PriorKey == trigger_settings.extend_key and A_TimeSinceThisHotkey < trigger_settings.tap_sensitivity) { ; only toggle on a trigger press -- change the number to adjust timing
+        if (A_PriorKey == trigger_settings.extend_key and A_TimeSinceThisHotkey < trigger_settings.tap_sensitivity) { ; only toggle on a trigger press without any other keypresses
             ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
         }
         else {
-            extend_layer_active = 0
-            MouseController.SetTimer("cursor_timer", "off")
-            MouseController.SetTimer("scroll_wheel_timer", "off")
-            ClearModifiers()
+            extend_layer_active = ExtendLayerDeactivate()
         }
     }
     else {
         KeyWait % SubStr(A_ThisHotkey, 2)
-        extend_layer_active = 0
-        MouseController.SetTimer("cursor_timer", "off")
-        MouseController.SetTimer("scroll_wheel_timer", "off")
-        ClearModifiers()
+        extend_layer_active = ExtendLayerDeactivate()
         ToolTip
     }
     Return
@@ -252,6 +235,19 @@ ReadSettings(settings_category) {
         settings[Array[1]] := Array[2]
     }
     return settings 
+}
+
+ExtendLayerActivate() {
+    MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+    MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+    return 1
+}
+
+ExtendLayerDeactivate() {
+    MouseController.SetTimer("cursor_timer", "off")
+    MouseController.SetTimer("scroll_wheel_timer", "off")
+    ClearModifiers()
+    return 0
 }
 
 ;; ## Classes
