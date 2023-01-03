@@ -395,7 +395,17 @@ Class Marks
         {
             key_order.Push(A_LoopField)
         }
-        return key_order
+        final_key_order := key_order.Clone()
+        Loop, % this.settings.keys_per_mark - 1 {
+            temp := []
+            For _, key_1 in final_key_order {
+                For _, key_2 in key_order {
+                    temp.Push(key_1 key_2)
+                }
+            }
+            final_key_order := temp.Clone()
+        }
+        return final_key_order
 
     }
 
@@ -547,7 +557,12 @@ Class Marks
         this.ShowGUI(array_to_use)
         ExtendState.SetAwaitingInput(True)
         ClearModifiers()
-        Input, chosen_mark, L1 E, {esc}
+        if (array_to_use != "usage_marks") {
+            Input, chosen_mark, % "L" this.settings.keys_per_mark " E", {esc}, 1,2,3,4,5,6,7,8,9,0
+        }
+        else {
+            Input, chosen_mark, L1 E, {esc}
+        }
         if (IsNum(chosen_mark)) {
             this.HideGUI()
             this.GoToMark(chosen_mark)
