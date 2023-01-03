@@ -13,65 +13,21 @@ Process, Priority,, H
 ;;
 
 DetectSettingsFile()
-trigger_settings := ReadSettings("TRIGGER_SETTINGS")
-SessionMarks := new Marks
-MouseController := new MouseControls
+Global ExtendState := new ExtendLayerState
+Global SessionMarks := new Marks
+Global MouseController := new MouseControls
 
 ;; ## Trigger Configuration
 ;;
 
-Hotkey, % "*" trigger_settings.extend_key, % trigger_settings.trigger_mode
-
-
-global awaiting_input = 0 ; used to disable hotkeys while setting or going to mark
-extend_layer_active = 0 ; used to toggle extend mode
-
-; this is for hold behaviour
-Hold:
-    extend_layer_active := ExtendLayerActivate()
-    KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
-    extend_layer_active := ExtendLayerDeactivate()
-    Return
-
-; this is for pure toggle behaviour
-PureToggle:
-    if (extend_layer_active == 0) {
-        extend_layer_active := ExtendLayerActivate()
-        ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
-    }
-    else {
-        KeyWait % SubStr(A_ThisHotkey, 2) ; deactivate on release trigger
-        extend_layer_active := ExtendLayerDeactivate()
-        ToolTip
-    }
-    Return
-
-; this is for tap toggle behaviour
-TapToggle:
-    if (extend_layer_active == 0) {
-        extend_layer_active := ExtendLayerActivate()
-        KeyWait % SubStr(A_ThisHotkey, 2)
-        if (A_PriorKey == trigger_settings.extend_key and A_TimeSinceThisHotkey < trigger_settings.tap_sensitivity) { ; only toggle on a trigger press without any other keypresses
-            ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
-        }
-        else {
-            extend_layer_active := ExtendLayerDeactivate()
-        }
-    }
-    else {
-        KeyWait % SubStr(A_ThisHotkey, 2)
-        extend_layer_active := ExtendLayerDeactivate()
-        ToolTip
-    }
-    Return
+Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mode
 
 ;; ## Layer Mappings
 ;;
 
 LShift & RShift::CapsLock
 
-#If, extend_layer_active == 1 and awaiting_input == 0
-
+#If, ExtendState.IsActive() and not ExtendState.IsAwaitingInput()
     ;;  ### Row 0 - function keys
 
     F1::Volume_Mute
@@ -155,7 +111,7 @@ LShift & RShift::CapsLock
         Click, left, down
         KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
         Click, left, up
-        if (SessionMarks.settings.auto_mark == 1 and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
+        if (SessionMarks.settings.auto_mark and A_TimeSinceThisHotkey < 300) { ; users probably don't want to mark the endpoint of long clicks
             SessionMarks.SetMark()
         }
         Return
@@ -166,10 +122,10 @@ LShift & RShift::CapsLock
     sc033::Ctrl
     sc034::Alt
     sc035::
-        awaiting_input = 1
+        ExtendState.SetAwaitingInput(True)
         ClearModifiers()
         SessionMarks.SetMark(Marks.settings.mark_priority, 1)
-        awaiting_input = 0
+        ExtendState.SetAwaitingInput(False)
         Return
 
     ;sc01c::
@@ -204,8 +160,8 @@ ClearModifiers() {
 
 IsNum(str) {
     if str is number
-        return true
-    return false
+        return True
+    return False
 }
 
 DetectSettingsFile() {
@@ -237,22 +193,87 @@ ReadSettings(settings_category) {
     return settings 
 }
 
-ExtendLayerActivate() {
-    MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
-    MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
-    return 1
+; this is for hold behaviour
+Hold() {
+    ExtendState.Activate()
+    KeyWait % ExtendState.settings.extend_key
+    ExtendState.Deactivate()
 }
 
-ExtendLayerDeactivate() {
-    MouseController.SetTimer("cursor_timer", "off")
-    MouseController.SetTimer("scroll_wheel_timer", "off")
-    ClearModifiers()
-    return 0
+; this is for pure toggle behaviour
+PureToggle() {
+    if (not ExtendState.IsActive()) {
+        ExtendState.Activate()
+        ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+    }
+    else {
+        KeyWait % ExtendState.settings.extend_key
+        ExtendState.Deactivate()
+        ToolTip
+    }
+}
+
+; this is for tap toggle behaviour
+TapToggle() {
+    if (not ExtendState.IsActive()) {
+        ExtendState.Activate()
+        KeyWait % ExtendState.settings.extend_key
+        if (A_PriorKey == ExtendState.settings.extend_key and A_TimeSinceThisHotkey < ExtendState.settings.tap_sensitivity) { ; only toggle on a trigger press without any other keypresses
+            ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+        }
+        else {
+            ExtendState.Deactivate()
+        }
+    }
+    else {
+        KeyWait % ExtendState.settings.extend_key
+        ExtendState.Deactivate()
+        ToolTip
+    }
 }
 
 ;; ## Classes
 ;;
 ;;
+
+Class ExtendLayerState
+{
+    __New() {
+        this.settings := ReadSettings("TRIGGER_SETTINGS")
+        this.awaiting_input := False
+        this.active := False
+    }
+
+    IsActive() {
+        return this.active
+    }
+
+    IsAwaitingInput() {
+        return this.awaiting_input
+    }
+
+    SetActive(status) {
+        this.active := status
+    }
+
+    SetAwaitingInput(status) {
+        this.awaiting_input := status
+    }
+
+    Activate() {
+        MouseController.SetTimer("cursor_timer", MouseController.settings.mouse_interval)
+        MouseController.SetTimer("scroll_wheel_timer", MouseController.settings.scroll_interval)
+        this.active := True
+    }
+
+    Deactivate() {
+        MouseController.SetTimer("cursor_timer", "off")
+        MouseController.SetTimer("scroll_wheel_timer", "off")
+        ClearModifiers()
+        this.active := False
+    }
+
+}
 
 Class MouseControls
 {
@@ -272,8 +293,9 @@ Class MouseControls
 
     ; Scroll Wheel -function and time is smoother than mapping directly
     MoveScrollWheel(){
-        if (awaiting_input == 1 or extend_layer_active == 0)
+        if (ExtendState.IsAwaitingInput() or not ExtendState.IsActive()){
             return
+        }
         else if GetKeyState("sc016", "P") {
             if GetKeyState("Shift", "P")
                 send {WheelLeft}
@@ -289,7 +311,7 @@ Class MouseControls
     }
 
     MoveCursor() {
-        if (awaiting_input == 1 or extend_layer_active == 0)
+        if (ExtendState.IsAwaitingInput() or not ExtendState.IsActive())
             return
 
         up := 0 - GetKeyState("sc017", "P")
@@ -339,7 +361,7 @@ Class Marks
 
     GenerateMarks(dimensions) {
         ; TODO this generates incorrect marks if screen scaling != 100
-        i = 1
+        i := 1
         mark_array := {}
         Loop, % dimensions.Length() {
             x_splits := (this.key_order.Length() // Min(dimensions.Length(), this.key_order.Length() // this.settings.y_splits)) // this.settings.y_splits
@@ -448,19 +470,19 @@ Class Marks
         Gui, destroy
     }
 
-    SetMark(mark_priority := 0, user_set := 0) {
+    SetMark(mark_priority := 0, user_set := False) {
         MouseGetPos, cur_x, cur_y
-        if (user_set == 1 and this.settings.auto_assign_mark == 0) {
+        if (user_set and not this.settings.auto_assign_mark) {
             ToolTip, Set Mark
             Input, mark_to_use, L1 E, {esc}
             ToolTip
         }
         else {
             mark_to_use := this.NearbyMark(cur_x, cur_y)
-            nearby_mark = 1
+            nearby_mark := True
             if not mark_to_use {
                 mark_to_use := this.FindLowestPriorityMark()
-                nearby_mark = 0
+                nearby_mark := False
             }
         }
         if mark_to_use {
@@ -469,7 +491,7 @@ Class Marks
                 this.mark_arrays.usage_marks[mark_to_use].priority := mark_priority
                 this.mark_arrays.usage_marks[mark_to_use].time_set := A_TickCount
             }
-            if (user_set == 1) {
+            if (user_set) {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % "usage_mark-" mark_to_use
                 ToolTip, Set Mark at %mark_to_use%
                 Sleep, % this.settings.mark_move_delay
@@ -523,7 +545,7 @@ Class Marks
 
     GoToMark(array_to_use:="usage_marks") {
         this.ShowGUI(array_to_use)
-        awaiting_input = 1
+        ExtendState.SetAwaitingInput(True)
         ClearModifiers()
         Input, chosen_mark, L1 E, {esc}
         if (IsNum(chosen_mark)) {
@@ -534,6 +556,6 @@ Class Marks
         this.MoveCursor(chosen_mark, array_to_use)
         Sleep, this.settings.mark_move_delay
         this.HideGUI()
-        awaiting_input = 0
+        ExtendState.SetAwaitingInput(False)
     }
 }
