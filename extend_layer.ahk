@@ -345,6 +345,7 @@ Class Marks
     __New() {
         this.settings := ReadSettings("MARK_SETTINGS")
         this.key_order := this.ReadKeyOrder()
+        this.lengthened_marks := this.IncreaseMarkLength()
         this.screen_dimension := this.GetScreenDimensions()
         this.mark_arrays := {}
         this.mark_arrays.usage_marks := this.RestoreMarks()
@@ -364,14 +365,14 @@ Class Marks
         i := 1
         mark_array := {}
         Loop, % dimensions.Length() {
-            x_splits := (this.key_order.Length() // Min(dimensions.Length(), this.key_order.Length() // this.settings.y_splits)) // this.settings.y_splits
+            x_splits := (this.lengthened_marks.Length() // Min(dimensions.Length(), this.lengthened_marks.Length() // this.settings.y_splits)) // this.settings.y_splits
 
             y_locations := this.SplitRange(dimensions[A_Index].top, dimensions[A_Index].height - 2*this.settings.starting_height, this.settings.y_splits)
             x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width, x_splits)
 
             for key, y_val in y_locations {
                 for key, x_val in x_locations {
-                    mark_array[this.key_order[i]] := {x: x_val + this.settings.starting_width, y: y_val + this.settings.starting_height}
+                    mark_array[this.lengthened_marks[i]] := {x: x_val + this.settings.starting_width, y: y_val + this.settings.starting_height}
                     i++
                 }
             }
@@ -395,18 +396,23 @@ Class Marks
         {
             key_order.Push(A_LoopField)
         }
-        final_key_order := key_order.Clone()
-        Loop, % this.settings.keys_per_mark - 1 {
+        return key_order
+    }
+
+    IncreaseMarkLength() {
+        ; takes a list of available keys and permutates to create strings of length mark_length
+        ; returns the lengthened mark names
+        lengthened_mark_keys := this.key_order.Clone()
+        if (this.settings.longer_marks) {
             temp := []
-            For _, key_1 in final_key_order {
-                For _, key_2 in key_order {
+            For _, key_1 in lengthened_mark_keys {
+                For _, key_2 in this.key_order {
                     temp.Push(key_1 key_2)
                 }
             }
-            final_key_order := temp.Clone()
-        }
-        return final_key_order
-
+            lengthened_mark_keys := temp.Clone()
+            }
+        return lengthened_mark_keys 
     }
 
     RestoreMarks() {
@@ -557,11 +563,11 @@ Class Marks
         this.ShowGUI(array_to_use)
         ExtendState.SetAwaitingInput(True)
         ClearModifiers()
-        if (array_to_use != "usage_marks") {
-            Input, chosen_mark, % "L" this.settings.keys_per_mark " E", {esc}, 1,2,3,4,5,6,7,8,9,0
+        if (array_to_use == "usage_marks" or not this.settings.longer_marks) {
+            Input, chosen_mark, L1 E, {esc}
         }
         else {
-            Input, chosen_mark, L1 E, {esc}
+            Input, chosen_mark, L2 E, {esc}, 1,2,3,4,5,6,7,8,9,0
         }
         if (IsNum(chosen_mark)) {
             this.HideGUI()
