@@ -463,8 +463,8 @@ Class Marks
         Gui, Font, % "S" this.settings.font_size, % this.settings.font
         For key, value in this.mark_arrays[array_to_use]{
             if (key == "'") {
-                last_x_position := value.x - this.screen_dimension[0].left
-                last_y_position := value.y - this.screen_dimension[0].top
+                last_x_position := value.x - 5 - this.screen_dimension[0].left
+                last_y_position := value.y - 5 - this.screen_dimension[0].top
                 continue
             }
             ; these adjustments are because 0, 0 is always the top left of the gui but the mark position can be negative
