@@ -367,8 +367,9 @@ Class Marks
         Loop, % dimensions.Length() {
             x_splits := (this.lengthened_marks.Length() // Min(dimensions.Length(), this.lengthened_marks.Length() // this.settings.y_splits)) // this.settings.y_splits
 
-            y_locations := this.SplitRange(dimensions[A_Index].top, dimensions[A_Index].height - 2*this.settings.starting_height, this.settings.y_splits)
-            x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width, x_splits)
+            ; -20 adjusts for button width and height -- would need to be changed if font or size changes
+            y_locations := this.SplitRange(dimensions[A_Index].top, dimensions[A_Index].height - 2*this.settings.starting_height - 20, this.settings.y_splits) 
+            x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width - 20, x_splits)
 
             for key, y_val in y_locations {
                 for key, x_val in x_locations {
@@ -462,8 +463,8 @@ Class Marks
         Gui, Font, % "S" this.settings.font_size, % this.settings.font
         For key, value in this.mark_arrays[array_to_use]{
             if (key == "'") {
-                last_x_position := value.x - 5 - this.screen_dimension[0].left
-                last_y_position := value.y - 5 - this.screen_dimension[0].top
+                last_x_position := value.x - this.screen_dimension[0].left
+                last_y_position := value.y - this.screen_dimension[0].top
                 continue
             }
             ; these adjustments are because 0, 0 is always the top left of the gui but the mark position can be negative
