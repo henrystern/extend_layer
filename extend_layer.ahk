@@ -9,46 +9,30 @@ CoordMode, ToolTip, Screen
 SetMouseDelay, -1
 Process, Priority,, H
 
-;; ## Read Settings and initialize class objects
-;;
-
+; ## Read Settings and initialize class objects
 DetectSettingsFile()
 Global ExtendState := new ExtendLayerState
 Global SessionMarks := new Marks
 Global MouseController := new MouseControls
 
-;; ## Trigger Configuration
-;;
-
+; ## Trigger Configuration
 Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mode
 
-;; ## Layer Mappings
-;;
-
+; ## Layer Mappings
 LShift & RShift::CapsLock
 
 #If, ExtendState.IsActive() and not ExtendState.IsAwaitingInput()
-    ;;  ### Row 0 - function keys
-
+    ;  ### Row 0 - function keys
     F1::Volume_Mute
     F2::Volume_Down
     F3::Volume_Up
     F4::Media_Play_Pause
     F5::Media_Prev
     F6::Media_Next
-    ;F7::
-    ;F8::
-    ;F9::
-    ;F10::
-    ;F11::
-    ;F12::
 
-    ; I use scancodes so it works regardless of keyboard layout
-
-    ;;  ### Row 1 - number row
-    ;;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
-    ;;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
-
+    ;  ### Row 1 - number row
+    ;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
+    ;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
     sc029::SessionMarks.GoToMark("all_monitors")
     sc002::F1
     sc003::F2
@@ -63,12 +47,9 @@ LShift & RShift::CapsLock
     sc00c::^w
     sc00d::^t
 
-    ;sc00e::
-
-    ;;  ### Row 2 - upper letter row
-    ;;  ||Tab     |Q     |W     |E     |R     |T     |Y     |U     |I     |O     |P     |[     |]     ||
-    ;;  ||RWWc00f |sc010 |sc011 |sc012 |sc013 |sc014 |sc015 |sc016 |sc017 |sc018 |sc019 |sc01a |sc01b ||
-
+    ;  ### Row 2 - upper letter row
+    ;  ||Tab     |Q     |W     |E     |R     |T     |Y     |U     |I     |O     |P     |[     |]     ||
+    ;  ||RWWc00f |sc010 |sc011 |sc012 |sc013 |sc014 |sc015 |sc016 |sc017 |sc018 |sc019 |sc01a |sc01b ||
     sc010::Home
     sc011::Up
     sc012::End
@@ -82,10 +63,9 @@ LShift & RShift::CapsLock
     sc01a::^+Tab
     sc01b::^Tab
 
-    ;;  ### Row 3 - home row
-    ;   ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
-    ;;  ||sc03a |sc01e |sc01f |sc020 |sc021 |sc022 |sc023 |sc024 |sc025 |sc026 |sc027 |sc028 |sc02b ||
-
+    ;  ### Row 3 - home row
+    ;  ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
+    ;  ||sc03a |sc01e |sc01f |sc020 |sc021 |sc022 |sc023 |sc024 |sc025 |sc026 |sc027 |sc028 |sc02b ||
     sc01e::Left
     sc01f::Down
     sc020::Right
@@ -98,12 +78,10 @@ LShift & RShift::CapsLock
     sc027::^Backspace
     sc028::SessionMarks.GoToMark("usage_marks")
     +sc028::SessionMarks.GoToMark("all_monitors")
-    ;sc02b::
 
-    ;;  ### Row 4 - lower letter row
-    ;;  ||LS/GT |Z     |X     |C     |V     |B     |N     |M     |,     |.     |/     |Enter |Space ||
-    ;;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
-
+    ;  ### Row 4 - lower letter row
+    ;  ||LS/GT |Z     |X     |C     |V     |B     |N     |M     |,     |.     |/     |Enter |Space ||
+    ;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
     sc056::^z
     sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
     sc02d::^c
@@ -127,24 +105,14 @@ LShift & RShift::CapsLock
         SessionMarks.SetMark(Marks.settings.mark_priority, 1)
         ExtendState.SetAwaitingInput(False)
         Return
-
-    ;sc01c::
     sc039::Enter
-
-;; ### Mouse Buttons
-;;
-
-;XButton1::^c
-;XButton2::^v
 
 #If
 
-;; ## Functions
-;;
-;;
+; ## Functions
 
-; release modifiers if they were still being held down when extend was released
 ClearModifiers() {
+    ; release modifiers if they were still being held down when extend was released
     If GetKeyState("Shift")
         send {Shift up}
     If GetKeyState("Ctrl")
@@ -193,14 +161,12 @@ ReadSettings(settings_category) {
     return settings 
 }
 
-; this is for hold behaviour
 Hold() {
     ExtendState.Activate()
     KeyWait % ExtendState.settings.extend_key
     ExtendState.Deactivate()
 }
 
-; this is for pure toggle behaviour
 PureToggle() {
     if (not ExtendState.IsActive()) {
         ExtendState.Activate()
@@ -213,12 +179,12 @@ PureToggle() {
     }
 }
 
-; this is for tap toggle behaviour
 TapToggle() {
     if (not ExtendState.IsActive()) {
         ExtendState.Activate()
         KeyWait % ExtendState.settings.extend_key
-        if (A_PriorKey == ExtendState.settings.extend_key and A_TimeSinceThisHotkey < ExtendState.settings.tap_sensitivity) { ; only toggle on a trigger press without any other keypresses
+        if (A_PriorKey == ExtendState.settings.extend_key and A_TimeSinceThisHotkey < ExtendState.settings.tap_sensitivity) { 
+            ; only toggle on a trigger press without any other keypresses
             ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
         }
         else {
@@ -232,9 +198,7 @@ TapToggle() {
     }
 }
 
-;; ## Classes
-;;
-;;
+; ## Classes
 
 Class ExtendLayerState
 {
@@ -277,7 +241,6 @@ Class ExtendLayerState
 
 Class MouseControls
 {
-    ;; inspired by https://github.com/4strid/mouse-control.autohotkey
     __New() {
         this.settings := ReadSettings("MOUSE_SETTINGS")
         this.velocity_x := 0
@@ -291,7 +254,6 @@ Class MouseControls
         SetTimer % timer, % period
     }
 
-    ; Scroll Wheel -function and time is smoother than mapping directly
     MoveScrollWheel(){
         if (ExtendState.IsAwaitingInput() or not ExtendState.IsActive()){
             return
@@ -367,7 +329,7 @@ Class Marks
         Loop, % dimensions.Length() {
             x_splits := (this.lengthened_marks.Length() // Min(dimensions.Length(), this.lengthened_marks.Length() // this.settings.y_splits)) // this.settings.y_splits
 
-            ; -20 adjusts for button width and height -- would need to be changed if font or size changes
+            ; -20 adjusts for button width and height -- would need to be changed if font or fontsize changes
             y_locations := this.SplitRange(dimensions[A_Index].top, dimensions[A_Index].height - 2*this.settings.starting_height - 20, this.settings.y_splits) 
             x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width - 20, x_splits)
 
@@ -472,13 +434,13 @@ Class Marks
             y_position := value.y - 5 - this.screen_dimension[0].top
             Gui, Add, button, x%x_position% y%y_position%, %key%
         } 
-        ; this makes ' mark appear over any other marks
         if last_x_position {
+            ; this makes ' mark appear over any other marks
             Gui, Add, button, x%last_x_position% y%last_y_position%, '
         }
 
-        Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is for WinSet
-        WinSet, TransColor, EEAA99 ; makes all EEAA99 colors invisible
+        Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is necessary for WinSet
+        WinSet, TransColor, EEAA99
         Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].width " h" this.screen_dimension[0].height " NoActivate"
     }
 
@@ -519,8 +481,10 @@ Class Marks
 
     NearbyMark(x, y) {
         For key, value in this.mark_arrays.usage_marks {
-            if (abs(x - value.x) < this.settings.x_threshold and abs(y - value.y) < this.settings.y_threshold) { ; if the approximate location is already marked then just update the location of that mark
-                if (key != "'") { ; should still create mark if the close key is the last jump mark
+            if (abs(x - value.x) < this.settings.x_threshold and abs(y - value.y) < this.settings.y_threshold) { 
+                ; if the approximate location is already marked then just update the location of that mark
+                if (key != "'") { 
+                    ; should still create mark if the close key is the last jump mark
                     Return key
                 }
             }
@@ -534,7 +498,9 @@ Class Marks
                 Return key
             }
             if (this.mark_arrays.usage_marks[key].priority <= min_priority) {
-                if (this.mark_arrays.usage_marks[key].priority != min_priority or this.mark_arrays.usage_marks[key].time_set < this.mark_arrays.usage_marks[lowest_priority].time_set) { ; for marks of the same priority prefer to overwrite the older mark
+                if (this.mark_arrays.usage_marks[key].priority != min_priority 
+                    or this.mark_arrays.usage_marks[key].time_set < this.mark_arrays.usage_marks[lowest_priority].time_set) {
+                    ; for marks of the same priority prefer to overwrite the older mark
                     lowest_priority := key
                 }
                 min_priority := this.mark_arrays.usage_marks[key].priority
