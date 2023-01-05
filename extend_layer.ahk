@@ -23,29 +23,29 @@ LShift & RShift::CapsLock
 
 #If, ExtendState.IsActive() and not ExtendState.IsAwaitingInput()
     ;  ### Row 0 - function keys
-    ; F1::Volume_Mute
-    ; F2::Volume_Down
-    ; F3::Volume_Up
-    ; F4::Media_Play_Pause
-    ; F5::Media_Prev
-    ; F6::Media_Next
+    F1::Volume_Mute
+    F2::Volume_Down
+    F3::Volume_Up
+    F4::Media_Play_Pause
+    F5::Media_Prev
+    F6::Media_Next
 
     ;  ### Row 1 - number row
     ;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
     ;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
-    ; sc029::SessionMarks.GoToMark("all_monitors")
-    ; sc002::F1
-    ; sc003::F2
-    ; sc004::F3
-    ; sc005::F4
-    ; sc006::F5
-    ; sc007::F6
-    ; sc008::F7
-    ; sc009::F8
-    ; sc00a::F9
-    ; sc00b::F10
-    ; sc00c::^w
-    ; sc00d::^t
+    sc029::SessionMarks.GoToMark("all_monitors")
+    sc002::F1
+    sc003::F2
+    sc004::F3
+    sc005::F4
+    sc006::F5
+    sc007::F6
+    sc008::F7
+    sc009::F8
+    sc00a::F9
+    sc00b::F10
+    sc00c::^w
+    sc00d::^t
 
     ;  ### Row 2 - upper letter row
     ;  ||Tab     |Q     |W     |E     |R     |T     |Y     |U     |I     |O     |P     |[     |]     ||
@@ -54,14 +54,14 @@ LShift & RShift::CapsLock
     sc011::Up
     sc012::End
     sc013::Delete
-    ; sc014::Esc
-    ; sc015::PgUp
+    sc014::Esc
+    sc015::PgUp
     *sc016::Return ; change scrollwheel keys in the MoveScrollWheel method
     *sc017::Return ; change mouse keys in the MoveCursor method
     *sc018::Return
     sc019::^Delete
-    ; sc01a::^+Tab
-    ; sc01b::^Tab
+    sc01a::^+Tab
+    sc01b::^Tab
 
     ;  ### Row 3 - home row
     ;  ||Caps  |A     |S     |D     |F     |G     |H     |J     |K     |L     |;     |'     |\     ||
@@ -70,8 +70,8 @@ LShift & RShift::CapsLock
     sc01f::Down
     sc020::Right
     sc021::Backspace
-    ; sc022::Appskey
-    ; sc023::PgDn
+    sc022::Appskey
+    sc023::PgDn
     *sc024::Return
     *sc025::Return
     *sc026::Return
@@ -83,8 +83,8 @@ LShift & RShift::CapsLock
     ;  ||LS/GT |Z     |X     |C     |V     |B     |N     |M     |,     |.     |/     |Enter |Space ||
     ;  ||sc056 |sc02c |sc02d |sc02e |sc02f |sc030 |sc031 |sc032 |sc033 |sc034 |sc035 |sc01c |sc039 ||
     ; sc056::^z
-    ; sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
-    ; sc02d::^c
+    sc02c::^z ; would recommend changing to ctrl-x on an iso keyboard
+    sc02d::^c
     *sc02e::
         Click, left, down
         KeyWait % SubStr(A_ThisHotkey, 2) ; substr is ugly but necessary to escape the * modifier
@@ -93,8 +93,8 @@ LShift & RShift::CapsLock
             SessionMarks.SetMark()
         }
         Return
-    ; sc02f::^v
-    ; sc030::MButton
+    sc02f::^v
+    sc030::MButton
     sc031::RButton
     sc032::Shift
     sc033::Ctrl
