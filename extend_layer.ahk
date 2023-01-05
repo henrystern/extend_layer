@@ -374,7 +374,6 @@ Class Marks
         ; takes a list of available keys and permutates to create strings of length mark_length
         ; returns the lengthened mark names
         lengthened_mark_keys := this.key_order.Clone()
-        MsgBox, % this.settings.longer_marks ", " this.settings.auto_assign_mark
         if (this.settings.longer_marks) {
             temp := []
             For _, key_1 in lengthened_mark_keys {
