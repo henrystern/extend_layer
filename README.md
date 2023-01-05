@@ -1,7 +1,7 @@
 This is the fully mapped version of the layer, for a simpler and more intuitive layout see [Light Mode](https://github.com/henrystern/extend_layer).
 
 ### Overview
-![Layer Image](https://github.com/henrystern/extend_layer/blob/main/defaults.png?raw=true)
+![Layer Image](https://github.com/henrystern/extend_layer/blob/fully_mapped/defaults.png?raw=true)
 ### Purpose
 This script turns the CapsLock key into a new modifier (like shift, or ctrl), that when held down provides access to the controls shown above.
 Complete navigation and mouse control becomes accessible without ever having to move your hands away from the home row. 
