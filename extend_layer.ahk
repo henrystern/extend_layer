@@ -22,9 +22,11 @@ Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mo
 
 ; ## Layer Mappings
 LShift & RShift::CapsLock
-^+1::HelpImage.ToggleHelp()
 
 #If, ExtendState.IsActive() and not ExtendState.IsAwaitingInput()
+    ; ### Help Shortcut
+    ^sc002::HelpImage.ToggleHelp() ; Caps+Ctrl+1
+    
     ;  ### Row 0 - function keys
     F1::Volume_Mute
     F2::Volume_Down
@@ -582,7 +584,7 @@ Class HelpImageState
             Gui, Add, Picture,, % this.image_path
             Gui, Color, % colour
             Gui, +LastFound -Caption +AlwaysOnTop +ToolWindow -Border
-            Gui, Show, % "x" (A_ScreenWidth / 2) - (this.image_dimensions.x / 2) " y" A_ScreenHeight - (this.image_dimensions.y + 50)
+            Gui, Show, % "x" (A_ScreenWidth / 2) - (this.image_dimensions.x / 2) " y" A_ScreenHeight - (this.image_dimensions.y + 50) " NoActivate"
         }
         else 
             Gui, help:Destroy
