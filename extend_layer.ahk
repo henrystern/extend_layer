@@ -6,6 +6,7 @@ SetBatchLines, -1
 SetWorkingDir %A_ScriptDir%
 CoordMode, Mouse, Screen
 CoordMode, ToolTip, Screen
+CoordMode, Pixel, Screen
 SetMouseDelay, -1
 Process, Priority,, H
 
@@ -14,12 +15,14 @@ DetectSettingsFile()
 Global ExtendState := new ExtendLayerState
 Global SessionMarks := new Marks
 Global MouseController := new MouseControls
+Global HelpImage := new HelpImageState
 
 ; ## Trigger Configuration
 Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mode
 
 ; ## Layer Mappings
 LShift & RShift::CapsLock
+^+1::HelpImage.ToggleHelp()
 
 #If, ExtendState.IsActive() and not ExtendState.IsAwaitingInput()
     ;  ### Row 0 - function keys
@@ -560,5 +563,39 @@ Class Marks
         Sleep, this.settings.mark_move_delay
         this.HideGUI()
         ExtendState.SetAwaitingInput(False)
+    }
+}
+
+Class HelpImageState
+{
+    __New() {
+        this.status := False
+        this.image_path := ".\defaults.png"
+        this.image_dimensions := this.GetImageSize(this.image_path)
+        this.bg_colour := "FFFFFF"
+    }
+
+    ToggleHelp() {
+        this.status := not this.status
+        if this.status {
+            Gui, help:New
+            Gui, Add, Picture,, % this.image_path
+            Gui, Color, % colour
+            Gui, +LastFound -Caption +AlwaysOnTop +ToolWindow -Border
+            Gui, Show, % "x" (A_ScreenWidth / 2) - (this.image_dimensions.x / 2) " y" A_ScreenHeight - (this.image_dimensions.y + 50)
+        }
+        else 
+            Gui, help:Destroy
+    }
+
+    GetImageSize(image) {
+        if FileExist(image) {
+            Gui, Add, Picture, hwndpic, % image
+            ControlGetPos,,, width, height,, ahk_id %pic%
+            Gui, Destroy
+        }
+        else 
+            height := width := 0
+        return {x: width, y: height}
     }
 }
