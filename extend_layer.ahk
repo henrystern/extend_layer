@@ -585,9 +585,22 @@ Class HelpImageState
             Gui, Color, % colour
             Gui, +LastFound -Caption +AlwaysOnTop +ToolWindow -Border
             Gui, Show, % "x" (A_ScreenWidth / 2) - (this.image_dimensions.x / 2) " y" A_ScreenHeight - (this.image_dimensions.y + 50) " NoActivate"
+            this.EnableGuiDrag()
         }
         else 
             Gui, help:Destroy
+    }
+
+    EnableGuiDrag() {
+        ; from joedf at https://www.autohotkey.com/boards/viewtopic.php?t=67
+        WinGetPos,,,A_w,A_h,A
+        Gui, help:Add, Text, x0 y0 w%A_w% h%A_h% +BackgroundTrans gGUI_Drag
+        return
+        
+        GUI_Drag:
+        SendMessage 0xA1,2  ;-- Goyyah/SKAN trick
+        ;http://autohotkey.com/board/topic/80594-how-to-enable-drag-for-a-gui-without-a-titlebar
+        return
     }
 
     GetImageSize(image) {
