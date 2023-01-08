@@ -10,6 +10,7 @@ Complete navigation and mouse control becomes accessible without ever having to 
   * Marks to quickly jump between cursor locations
 
 ### Tips
+  * The help image can be displayed anytime by pressing Ext+Ctrl+1
   * By default CapsLock is remapped to LShift + RShift
   * A grid of evenly spaced marks across all monitors can be accessed from Ext+Shift+'
   * While waiting for a mark, pressing a number key will show you a grid of marks for that monitor (1 being primary).
