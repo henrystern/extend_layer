@@ -580,9 +580,10 @@ Class ContextAndHelpImageState
 
     AddContextMenu() {
         Menu, Tray, NoStandard
-        Menu, Tray, Add
         Menu, Tray, Add, Show Help Image, ShowHelp
-        Menu, Tray, Add, Change Settings, OpenSettings
+        Menu, Tray, Add
+        Menu, Tray, Add, Edit Settings, EditSettings
+        Menu, Tray, Add, Edit Marks, EditMarks
         Menu, Tray, Add, Edit Script, EditScript
         Menu, Tray, Add
         Menu, Tray, Add, Reload Script, ReloadScript
@@ -593,12 +594,17 @@ Class ContextAndHelpImageState
             HelpImage.ToggleHelp()
             Return
 
-        OpenSettings:
+        EditSettings:
             Run, % "open " A_ScriptDir "\settings.ini"
+            Return
+
+        EditMarks:
+            Run, % "open " A_ScriptDir "\saved_marks.ini"
             Return
 
         EditScript:
             Run, % "edit " A_ScriptFullPath
+            Return
 
         ReloadScript:
             Reload
