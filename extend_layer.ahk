@@ -121,6 +121,29 @@ LShift & RShift::CapsLock
 
 #If
 
+; TODO create offsets so that caps + i, j, k, l will move the marks by little increments
+#If, ExtendState.IsAwaitingInput() and GetKeyState("Capslock", "P")
+    ;  ### Row 1 - number row
+    ;  ||`     |1     |2     |3     |4     |5     |6     |7     |8     |9     |0     |-     |=     |Back  ||
+    ;  ||sc029 |sc002 |sc003 |sc004 |sc005 |sc006 |sc007 |sc008 |sc009 |sc00a |sc00b |sc00c |sc00d |sc00e ||
+    sc029::SessionMarks.ChangeMarkArray("all_monitors")
+    sc002::SessionMarks.ChangeMarkArray("1")
+    sc003::SessionMarks.ChangeMarkArray("2")
+    sc004::SessionMarks.ChangeMarkArray("3")
+    sc005::SessionMarks.ChangeMarkArray("4")
+    sc006::SessionMarks.ChangeMarkArray("5")
+    sc007::SessionMarks.ChangeMarkArray("6")
+    sc008::SessionMarks.ChangeMarkArray("7")
+    sc009::SessionMarks.ChangeMarkArray("8")
+    sc00a::SessionMarks.ChangeMarkArray("9")
+
+    ; i, j, k, l
+    *sc017::SessionMarks.AdjustMarkOffset("up")
+    *sc024::SessionMarks.AdjustMarkOffset("left")
+    *sc025::SessionMarks.AdjustMarkOffset("down")
+    *sc026::SessionMarks.AdjustMarkOffset("right")
+#If
+
 ; ## Functions
 
 ClearModifiers() {
@@ -322,6 +345,7 @@ Class MouseControls
     }
 }
 
+; This class is pretty complex could be split into generator and state
 Class Marks
 {
     __New() {
@@ -340,6 +364,7 @@ Class Marks
         monitor_dimensions := this.screen_dimension.Clone()
         monitor_dimensions.Delete(0)
         this.mark_arrays.all_monitors := this.GenerateMarks(monitor_dimensions)
+        this.mark_offset := {x: 0, y: 0}
     }
 
     GenerateMarks(dimensions) {
@@ -490,7 +515,7 @@ Class Marks
                 this.mark_arrays.usage_marks[mark_to_use].priority := mark_priority
                 this.mark_arrays.usage_marks[mark_to_use].time_set := A_TickCount
             }
-            if (user_set) {
+            if user_set {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % "usage_mark-" mark_to_use
                 ToolTip, Set Mark at %mark_to_use%
                 Sleep, % 2 * this.settings.mark_move_delay
@@ -535,8 +560,8 @@ Class Marks
         original_y := prev_y
         ; looping brute forces through monitor walls without having to compare monitor dimensions
         ; not very elegant but seems fast enough
-        While (prev_x != this.mark_arrays[array_to_use][mark_to_use].x or prev_y != this.mark_arrays[array_to_use][mark_to_use].y) { 
-            MouseMove, this.mark_arrays[array_to_use][mark_to_use].x, this.mark_arrays[array_to_use][mark_to_use].y, 0
+        While (prev_x != this.mark_arrays[array_to_use][mark_to_use].x + this.mark_offset.x or prev_y != this.mark_arrays[array_to_use][mark_to_use].y + this.mark_offset.y) { 
+            MouseMove, this.mark_arrays[array_to_use][mark_to_use].x + this.mark_offset.x, this.mark_arrays[array_to_use][mark_to_use].y + this.mark_offset.y, 0
             MouseGetPos, prev_x, prev_y
             if (A_Index == 15) {
                 break ; in case display settings have changed since marks were generated
@@ -554,17 +579,33 @@ Class Marks
             Input, chosen_mark, L1 E, {esc}
         }
         else {
-            Input, chosen_mark, L2 E, {esc}, 1,2,3,4,5,6,7,8,9,0
+            Input, chosen_mark, L2 E, {esc}
         }
-        if (IsNum(chosen_mark)) {
-            this.HideGUI()
-            this.GoToMark(chosen_mark)
-            Return
-        }
+
         this.MoveCursor(chosen_mark, array_to_use)
         Sleep, this.settings.mark_move_delay
         this.HideGUI()
+        this.mark_offset.x := 0
+        this.mark_offset.y := 0
         ExtendState.SetAwaitingInput(False)
+    }
+
+    ChangeMarkArray(array_to_use) {
+        SessionMarks.HideGUI()
+        SessionMarks.GoToMark(array_to_use)
+        Return
+    }
+
+    AdjustMarkOffset(direction) {
+        if (direction == "up")
+            this.mark_offset.y -= 10
+        else if (direction == "left")
+            this.mark_offset.x -= 10
+        else if (direction == "down")
+            this.mark_offset.y += 10
+        else if (direction == "right")
+            this.mark_offset.x += 10
+        WinMove, ahk_exe AutoHotkey.exe,, this.mark_offset.x, this.mark_offset.y
     }
 }
 
