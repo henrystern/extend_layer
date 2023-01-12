@@ -15,7 +15,7 @@ DetectSettingsFile()
 Global ExtendState := new ExtendLayerState
 Global SessionMarks := new Marks
 Global MouseController := new MouseControls
-Global HelpImage := new HelpImageState
+Global HelpImage := new ContextAndHelpImageState
 
 ; ## Trigger Configuration
 Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mode
@@ -568,39 +568,76 @@ Class Marks
     }
 }
 
-Class HelpImageState
+Class ContextAndHelpImageState
 {
     __New() {
         this.status := False
         this.image_path := ".\defaults.png"
         this.image_dimensions := this.GetImageSize(this.image_path)
         this.bg_colour := "FFFFFF"
+        this.AddContextMenu()
+    }
+
+    AddContextMenu() {
+        Menu, Tray, NoStandard
+        Menu, Tray, Add
+        Menu, Tray, Add, Show Help Image, ShowHelp
+        Menu, Tray, Add, Change Settings, OpenSettings
+        Menu, Tray, Add, Edit Script, EditScript
+        Menu, Tray, Add
+        Menu, Tray, Add, Reload Script, ReloadScript
+        Menu, Tray, Add, Exit, ExitScript
+        Return
+
+        ShowHelp:
+            HelpImage.ToggleHelp()
+            Return
+
+        OpenSettings:
+            Run, % "open " A_ScriptDir "\settings.ini"
+            Return
+
+        EditScript:
+            Run, % "edit " A_ScriptFullPath
+
+        ReloadScript:
+            Reload
+            Sleep 1000 ; If successful, the reload will close this instance during the Sleep, so the line below will never be reached.
+            MsgBox, 4,, The script could not be reloaded. Would you like to open it for editing?
+            IfMsgBox, Yes, Edit
+            Return
+
+        ExitScript:
+            ExitApp
+            Return
     }
 
     ToggleHelp() {
         this.status := not this.status
+        Menu, Tray, ToggleCheck, Show Help Image
         if this.status {
             Gui, help:New
             Gui, Add, Picture,, % this.image_path
             Gui, Color, % colour
             Gui, +LastFound -Caption +AlwaysOnTop +ToolWindow -Border
             Gui, Show, % "x" (A_ScreenWidth / 2) - (this.image_dimensions.x / 2) " y" A_ScreenHeight - (this.image_dimensions.y + 50) " NoActivate"
-            this.EnableGuiDrag()
-        }
+
+            ; Enable GUI Dragging
+            ; from joedf at https://www.autohotkey.com/boards/viewtopic.php?t=67
+            ; TODO dragging doesn't work when clicked through the extend layer maybe do a key_wait for left click
+            Sleep, 50
+            WinGetPos,,,A_w,A_h, % A_ScriptName 
+            Gui, help:Add, Text, x0 y0 w%A_w% h%A_h% +BackgroundTrans gGUI_Drag
+            return
+            
+            GUI_Drag:
+                SendMessage 0xA1,2  ;-- Goyyah/SKAN trick
+                ;http://autohotkey.com/board/topic/80594-how-to-enable-drag-for-a-gui-without-a-titlebar
+                return
+            }
+
         else 
             Gui, help:Destroy
-    }
-
-    EnableGuiDrag() {
-        ; from joedf at https://www.autohotkey.com/boards/viewtopic.php?t=67
-        WinGetPos,,,A_w,A_h,A
-        Gui, help:Add, Text, x0 y0 w%A_w% h%A_h% +BackgroundTrans gGUI_Drag
-        return
-        
-        GUI_Drag:
-        SendMessage 0xA1,2  ;-- Goyyah/SKAN trick
-        ;http://autohotkey.com/board/topic/80594-how-to-enable-drag-for-a-gui-without-a-titlebar
-        return
     }
 
     GetImageSize(image) {
