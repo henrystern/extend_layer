@@ -592,6 +592,7 @@ Class Marks
         else if (direction == "right")
             this.mark_offset.x += 10
         WinMove, ahk_exe AutoHotkey.exe,, this.mark_offset.x, this.mark_offset.y
+        WinSet, Top,, ahk_exe AutoHotkey.exe
     }
 }
 
