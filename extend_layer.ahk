@@ -1,4 +1,4 @@
-#NoEnv
+﻿#NoEnv
 #installkeybdhook
 #MaxHotkeysPerInterval 200
 SendMode Input
@@ -591,7 +591,7 @@ Class Marks
             this.mark_offset.y += 10
         else if (direction == "right")
             this.mark_offset.x += 10
-        WinMove, ahk_exe AutoHotkey.exe,, this.mark_offset.x, this.mark_offset.y
+        WinMove, ahk_exe AutoHotkey.exe,, this.screen_dimension[0].left + this.mark_offset.x, this.screen_dimension[0].top + this.mark_offset.y
         WinSet, Top,, ahk_exe AutoHotkey.exe
     }
 }
