@@ -116,7 +116,7 @@ LShift & RShift::CapsLock
     sc035::
         ExtendState.SetAwaitingInput(True)
         ClearModifiers()
-        SessionMarks.SetMark(Marks.settings.mark_priority, 1)
+        SessionMarks.SetMark(SessionMarks.settings.mark_priority, 1)
         ExtendState.SetAwaitingInput(False)
         Return
     
@@ -530,13 +530,14 @@ Class Marks
             if not this.mark_arrays.usage_marks.haskey(key) { ; use unused marks first
                 Return key
             }
-            if (this.mark_arrays.usage_marks[key].priority <= min_priority) {
-                if (this.mark_arrays.usage_marks[key].priority != min_priority 
-                    or this.mark_arrays.usage_marks[key].time_set < this.mark_arrays.usage_marks[lowest_priority].time_set) {
+            if (this.mark_arrays.usage_marks[key].priority < min_priority) {
+                    lowest_priority := key
+                    min_priority := this.mark_arrays.usage_marks[key].priority
+            }
+            else if (this.mark_arrays.usage_marks[key].priority == min_priority 
+                     and this.mark_arrays.usage_marks[key].time_set < this.mark_arrays.usage_marks[lowest_priority].time_set) {
                     ; for marks of the same priority prefer to overwrite the older mark
                     lowest_priority := key
-                }
-                min_priority := this.mark_arrays.usage_marks[key].priority
             }
         }
         Return lowest_priority
