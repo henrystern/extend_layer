@@ -10,6 +10,10 @@ CoordMode, Pixel, Screen
 SetMouseDelay, -1
 Process, Priority,, H
 
+; Set DPI Awareness
+; Necessary for mousemove and mark gui if monitor dpi != 100%
+DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
+
 ; ## Read Settings and initialize class objects
 DetectSettingsFile()
 Global ExtendState := new ExtendLayerState
@@ -313,10 +317,10 @@ Class MouseControls
         this.velocity_y := this.Accelerate(this.velocity_y, up, down)
 
         ; store per-monitor DPI
-        RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
+        ; RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
         MouseMove, this.velocity_x, this.velocity_y, 0, R
         ; restore previous DPI awareness -- this is necessary for mousemove to work as expected when windows scaling != 100%
-        DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") 
+        ; DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") 
     }
 
     Accelerate(velocity, pos, neg) {
@@ -353,7 +357,6 @@ Class Marks
     }
 
     GenerateMarks(dimensions) {
-        ; TODO this generates incorrect marks if screen scaling != 100
         i := 1
         mark_array := {}
         Loop, % dimensions.Length() {
@@ -610,6 +613,7 @@ Class ContextAndHelpImageState
         Menu, Tray, NoStandard
         Menu, Tray, Add, Show Help Image, ShowHelp
         Menu, Tray, Add
+        Menu, Tray, Add, Open Script Folder, OpenScriptDir
         Menu, Tray, Add, Edit Settings, EditSettings
         Menu, Tray, Add, Edit Marks, EditMarks
         Menu, Tray, Add, Edit Script, EditScript
@@ -620,6 +624,10 @@ Class ContextAndHelpImageState
 
         ShowHelp:
             HelpImage.ToggleHelp()
+            Return
+
+        OpenScriptDir:
+            Run, % "open " A_ScriptDir
             Return
 
         EditSettings:
