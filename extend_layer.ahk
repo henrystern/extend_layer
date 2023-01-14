@@ -321,6 +321,9 @@ Class MouseControls
         down := 0 + GetKeyState("sc025", "P")
         right := 0 + GetKeyState("sc026", "P")
 
+        if (up == 0 and left == 0 and down == 0 and right == 0)
+            return
+
         ; minor adjustment if adjust key held down
         if (GetKeyState(ExtendState.settings.adjust_key, "P")) {
             SetMouseDelay, 100
