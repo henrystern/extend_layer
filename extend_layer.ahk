@@ -125,14 +125,14 @@ LShift & RShift::CapsLock
 
 #If
 
-#If, ExtendState.IsAwaitingInput() and GetKeyState("Capslock", "P")
+#If, ExtendState.IsAwaitingInput() and GetKeyState(ExtendState.settings.adjust_key, "P")
      ; hold caps to adjust mark locations while awaiting input
 
     ; w, a, s, d
-    ; *sc011::SessionMarks.AdjustMarkOffset("up")
-    ; *sc01e::SessionMarks.AdjustMarkOffset("left")
-    ; *sc01f::SessionMarks.AdjustMarkOffset("down")
-    ; *sc020::SessionMarks.AdjustMarkOffset("right")
+    *sc011::SessionMarks.AdjustMarkOffset("up")
+    *sc01e::SessionMarks.AdjustMarkOffset("left")
+    *sc01f::SessionMarks.AdjustMarkOffset("down")
+    *sc020::SessionMarks.AdjustMarkOffset("right")
 
     ; i, j, k, l
     *sc017::SessionMarks.AdjustMarkOffset("up")
@@ -321,6 +321,14 @@ Class MouseControls
         down := 0 + GetKeyState("sc025", "P")
         right := 0 + GetKeyState("sc026", "P")
 
+        ; minor adjustment if adjust key held down
+        if (GetKeyState(ExtendState.settings.adjust_key, "P")) {
+            SetMouseDelay, 100
+            MouseMove, (right + left) * ExtendState.settings.adjust_amount, (up + down) * ExtendState.settings.adjust_amount, 0, R
+            return
+        }
+
+        SetMouseDelay, -1
         this.velocity_x := this.Accelerate(this.velocity_x, left, right)
         this.velocity_y := this.Accelerate(this.velocity_y, up, down)
 
@@ -595,13 +603,13 @@ Class Marks
 
     AdjustMarkOffset(direction) {
         if (direction == "up")
-            this.mark_offset.y -= 10
+            this.mark_offset.y -= ExtendState.settings.adjust_amount
         else if (direction == "left")
-            this.mark_offset.x -= 10
+            this.mark_offset.x -= ExtendState.settings.adjust_amount
         else if (direction == "down")
-            this.mark_offset.y += 10
+            this.mark_offset.y += ExtendState.settings.adjust_amount
         else if (direction == "right")
-            this.mark_offset.x += 10
+            this.mark_offset.x += ExtendState.settings.adjust_amount
         WinMove, ahk_exe AutoHotkey.exe,, this.screen_dimension[0].left + this.mark_offset.x, this.screen_dimension[0].top + this.mark_offset.y
         WinSet, Top,, ahk_exe AutoHotkey.exe
     }
