@@ -15,7 +15,7 @@ Complete navigation and mouse control becomes accessible without ever having to 
   * By default CapsLock is remapped to LShift + RShift
   * A grid of evenly spaced marks across all monitors can be accessed from Caps+Shift+'
   * While waiting for a mark, pressing a number key will show you a grid of marks for that monitor (1 being primary).
-  * While the mark gui is visible holding Caps+ i, j, k, or l will make minor adjustments to the mark locations
+  * Holding Shift + i, j, k, or l will make minor adjustments to the mark or cursor locations
   * Shift + Scroll Up, and Shift + Scroll Down will perform horizontal scrolling.
   * Blank keys can be mapped to any ahk hotkey (See [Fully Mapped](https://github.com/henrystern/extend_layer/tree/fully_mapped))
 
