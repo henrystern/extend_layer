@@ -1,4 +1,4 @@
-﻿#NoEnv
+#NoEnv
 #installkeybdhook
 #MaxHotkeysPerInterval 200
 SendMode Input
@@ -126,7 +126,15 @@ LShift & RShift::CapsLock
 #If
 
 #If, ExtendState.IsAwaitingInput() and GetKeyState("Capslock", "P")
-    ; caps + i, j, k, l to adjust mark locations while awaiting input
+     ; hold caps to adjust mark locations while awaiting input
+
+    ; w, a, s, d
+    ; *sc011::SessionMarks.AdjustMarkOffset("up")
+    ; *sc01e::SessionMarks.AdjustMarkOffset("left")
+    ; *sc01f::SessionMarks.AdjustMarkOffset("down")
+    ; *sc020::SessionMarks.AdjustMarkOffset("right")
+
+    ; i, j, k, l
     *sc017::SessionMarks.AdjustMarkOffset("up")
     *sc024::SessionMarks.AdjustMarkOffset("left")
     *sc025::SessionMarks.AdjustMarkOffset("down")
@@ -316,11 +324,7 @@ Class MouseControls
         this.velocity_x := this.Accelerate(this.velocity_x, left, right)
         this.velocity_y := this.Accelerate(this.velocity_y, up, down)
 
-        ; store per-monitor DPI
-        ; RestoreDPI := DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
         MouseMove, this.velocity_x, this.velocity_y, 0, R
-        ; restore previous DPI awareness -- this is necessary for mousemove to work as expected when windows scaling != 100%
-        ; DllCall("SetThreadDpiAwarenessContext", "ptr", RestoreDPI, "ptr") 
     }
 
     Accelerate(velocity, pos, neg) {
@@ -367,8 +371,10 @@ Class Marks
             x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width - 20, x_splits)
 
             for key, y_val in y_locations {
+                normalized_y_val := (y_val + this.settings.starting_height)
                 for key, x_val in x_locations {
-                    mark_array[this.lengthened_marks[i]] := {x: x_val + this.settings.starting_width, y: y_val + this.settings.starting_height}
+                    normalized_x_val := (x_val + this.settings.starting_width)
+                    mark_array[this.lengthened_marks[i]] := {x: normalized_x_val, y: normalized_y_val}
                     i++
                 }
             }
@@ -455,6 +461,7 @@ Class Marks
 
     ShowGUI(array_to_use:="usage_marks") {
         Gui, Color, EEAA99
+        Gui, -DPIScale
         Gui, Font, % "S" this.settings.font_size, % this.settings.font
         For key, value in this.mark_arrays[array_to_use]{
             if (key == "'") {
