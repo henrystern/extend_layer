@@ -7,7 +7,6 @@ SetWorkingDir %A_ScriptDir%
 CoordMode, Mouse, Screen
 CoordMode, ToolTip, Screen
 CoordMode, Pixel, Screen
-SetMouseDelay, -1
 Process, Priority,, H
 
 SetMouseDelay, -1
