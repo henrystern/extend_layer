@@ -371,9 +371,8 @@ Class Marks
         Loop, % dimensions.Length() {
             x_splits := (this.lengthened_marks.Length() // Min(dimensions.Length(), this.lengthened_marks.Length() // this.settings.y_splits)) // this.settings.y_splits
 
-            ; -20 adjusts for button width and height -- would need to be changed if font or fontsize changes
-            y_locations := this.SplitRange(dimensions[A_Index].top, dimensions[A_Index].height - 2*this.settings.starting_height - 20, this.settings.y_splits) 
-            x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width - 20, x_splits)
+            y_locations := this.SplitRange(dimensions[A_Index].top, dimensions[A_Index].height - 2*this.settings.starting_height - (2.5 * this.settings.font_size), this.settings.y_splits) 
+            x_locations := this.SplitRange(dimensions[A_Index].left, dimensions[A_Index].width - 2*this.settings.starting_width - (2.5 * this.settings.font_size), x_splits)
 
             for key, y_val in y_locations {
                 normalized_y_val := (y_val + this.settings.starting_height)
@@ -470,13 +469,13 @@ Class Marks
         Gui, Font, % "S" this.settings.font_size, % this.settings.font
         For key, value in this.mark_arrays[array_to_use]{
             if (key == "'") {
-                last_x_position := value.x - 5 - this.screen_dimension[0].left
-                last_y_position := value.y - 5 - this.screen_dimension[0].top
+                last_x_position := value.x - this.screen_dimension[0].left
+                last_y_position := value.y - this.screen_dimension[0].top
                 continue
             }
             ; these adjustments are because 0, 0 is always the top left of the gui but the mark position can be negative
-            x_position := value.x - 5 - this.screen_dimension[0].left 
-            y_position := value.y - 5 - this.screen_dimension[0].top
+            x_position := value.x - this.screen_dimension[0].left 
+            y_position := value.y - this.screen_dimension[0].top
             Gui, Add, button, x%x_position% y%y_position%, %key%
         } 
         if last_x_position {
@@ -607,7 +606,7 @@ Class Marks
             this.mark_offset.y += ExtendState.settings.adjust_amount
         else if (direction == "right")
             this.mark_offset.x += ExtendState.settings.adjust_amount
-        WinMove, ahk_exe AutoHotkey.exe,, this.screen_dimension[0].left + this.mark_offset.x, this.screen_dimension[0].top + this.mark_offset.y
+        WinMove, ahk_class AutoHotkeyGUI,, this.screen_dimension[0].left + this.mark_offset.x, this.screen_dimension[0].top + this.mark_offset.y
         WinSet, Top,, ahk_exe AutoHotkey.exe
     }
 }
