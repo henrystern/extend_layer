@@ -9,6 +9,8 @@ CoordMode, ToolTip, Screen
 CoordMode, Pixel, Screen
 Process, Priority,, H
 
+SetMouseDelay, -1
+
 ; Set DPI Awareness
 ; Necessary for mousemove and mark gui if monitor dpi != 100%
 DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
@@ -320,9 +322,7 @@ Class MouseControls
 
         ; minor adjustment if adjust key held down
         if (GetKeyState(ExtendState.settings.adjust_key, "P")) {
-            SetMouseDelay, 100
-            MouseMove, (right + left) * ExtendState.settings.adjust_amount, (up + down) * ExtendState.settings.adjust_amount, 0, R
-            SetMouseDelay, -1
+            MouseMove, (right + left) * (ExtendState.settings.adjust_amount / 2), (up + down) * (ExtendState.settings.adjust_amount / 2), 0, R
             return
         }
 
