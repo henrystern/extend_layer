@@ -574,6 +574,8 @@ Class Marks
     }
 
     GoToMark(array_to_use:="usage_marks") {
+        this.mark_offset.x := 0
+        this.mark_offset.y := 0
         this.ShowGUI(array_to_use)
         ExtendState.SetAwaitingInput(True)
         ClearModifiers()
@@ -592,8 +594,6 @@ Class Marks
         this.MoveCursor(chosen_mark, array_to_use)
         Sleep, this.settings.mark_move_delay
         this.HideGUI()
-        this.mark_offset.x := 0
-        this.mark_offset.y := 0
         ExtendState.SetAwaitingInput(False)
     }
 
