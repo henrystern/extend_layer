@@ -607,7 +607,7 @@ Class Marks
             this.mark_offset.y += ExtendState.settings.adjust_amount
         else if (direction == "right")
             this.mark_offset.x += ExtendState.settings.adjust_amount
-        WinMove, ahk_exe AutoHotkey.exe,, this.screen_dimension[0].left + this.mark_offset.x, this.screen_dimension[0].top + this.mark_offset.y
+        WinMove, ahk_class AutoHotkeyGUI,, this.screen_dimension[0].left + this.mark_offset.x, this.screen_dimension[0].top + this.mark_offset.y
         WinSet, Top,, ahk_exe AutoHotkey.exe
     }
 }
