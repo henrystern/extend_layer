@@ -10,6 +10,8 @@ CoordMode, Pixel, Screen
 SetMouseDelay, -1
 Process, Priority,, H
 
+SetMouseDelay, -1
+
 ; Set DPI Awareness
 ; Necessary for mousemove and mark gui if monitor dpi != 100%
 DllCall("SetThreadDpiAwarenessContext", "ptr", -3, "ptr") 
@@ -126,19 +128,14 @@ LShift & RShift::CapsLock
 #If
 
 #If, ExtendState.IsAwaitingInput() and GetKeyState(ExtendState.settings.adjust_key, "P")
-     ; hold caps to adjust mark locations while awaiting input
-
-    ; w, a, s, d
-    *sc011::SessionMarks.AdjustMarkOffset("up")
-    *sc01e::SessionMarks.AdjustMarkOffset("left")
-    *sc01f::SessionMarks.AdjustMarkOffset("down")
-    *sc020::SessionMarks.AdjustMarkOffset("right")
+    ; hold caps to adjust mark locations while awaiting input
 
     ; i, j, k, l
     *sc017::SessionMarks.AdjustMarkOffset("up")
     *sc024::SessionMarks.AdjustMarkOffset("left")
     *sc025::SessionMarks.AdjustMarkOffset("down")
     *sc026::SessionMarks.AdjustMarkOffset("right")
+
 #If
 
 ; ## Functions
@@ -326,12 +323,10 @@ Class MouseControls
 
         ; minor adjustment if adjust key held down
         if (GetKeyState(ExtendState.settings.adjust_key, "P")) {
-            SetMouseDelay, 100
-            MouseMove, (right + left) * ExtendState.settings.adjust_amount, (up + down) * ExtendState.settings.adjust_amount, 0, R
+            MouseMove, (right + left) * (ExtendState.settings.adjust_amount / 2), (up + down) * (ExtendState.settings.adjust_amount / 2), 0, R
             return
         }
 
-        SetMouseDelay, -1
         this.velocity_x := this.Accelerate(this.velocity_x, left, right)
         this.velocity_y := this.Accelerate(this.velocity_y, up, down)
 
