@@ -1,9 +1,9 @@
-#NoEnv
+﻿#NoEnv
 #installkeybdhook
 #MaxHotkeysPerInterval 200
 SendMode Input
 SetBatchLines, -1
-SetWorkingDir %A_ScriptDir%
+SetWorkingDir % A_ScriptDir
 CoordMode, Mouse, Screen
 CoordMode, ToolTip, Screen
 CoordMode, Pixel, Screen
@@ -441,7 +441,7 @@ Class Marks
         SysGet, num_monitors, MonitorCount
         screen_dimension := {0: {top: 0, bottom: 0, left: 0, right: 0}}
         loop % num_monitors {
-            SysGet, mon, Monitor, %A_Index%
+            SysGet, mon, Monitor, % A_Index
             screen_dimension[A_Index] := {top: monTop, bottom: monBottom, left: monLeft, right: monRight}
             screen_dimension[A_Index].width := screen_dimension[A_Index].right - screen_dimension[A_Index].left
             screen_dimension[A_Index].height := screen_dimension[A_Index].bottom - screen_dimension[A_Index].top
@@ -476,15 +476,15 @@ Class Marks
             ; these adjustments are because 0, 0 is always the top left of the gui but the mark position can be negative
             x_position := value.x - this.screen_dimension[0].left 
             y_position := value.y - this.screen_dimension[0].top
-            Gui, Add, button, x%x_position% y%y_position%, %key%
+            Gui, Add, button, % "x" x_position " y" y_position " -theme", % key
         } 
         if last_x_position {
             ; this makes ' mark appear over any other marks
-            Gui, Add, button, x%last_x_position% y%last_y_position%, '
+            Gui, Add, button, % "x" last_x_position " y" last_y_position " -theme", '
         }
 
         Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is necessary for WinSet
-        WinSet, TransColor, EEAA99
+        WinSet, TransColor, % "EEAA99 " this.settings.mark_opacity * 10
         Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].width " h" this.screen_dimension[0].height " NoActivate"
     }
 
@@ -516,7 +516,7 @@ Class Marks
             }
             if user_set {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % "usage_mark-" mark_to_use
-                ToolTip, Set Mark at %mark_to_use%
+                ToolTip, % "Set Mark at " mark_to_use
                 Sleep, % 2 * this.settings.mark_move_delay
                 ToolTip
             }
@@ -622,6 +622,7 @@ Class ContextAndHelpImageState
     }
 
     AddContextMenu() {
+        Menu, Tray, Icon, assets/favicon.ico
         Menu, Tray, NoStandard
         Menu, Tray, Add, Show Help Image, ShowHelp
         Menu, Tray, Add
@@ -681,7 +682,7 @@ Class ContextAndHelpImageState
             ; TODO dragging doesn't work when clicked through the extend layer maybe do a key_wait for left click
             Sleep, 50
             WinGetPos,,,A_w,A_h, % A_ScriptName 
-            Gui, help:Add, Text, x0 y0 w%A_w% h%A_h% +BackgroundTrans gGUI_Drag
+            Gui, help:Add, Text, % "x0 y0 w" A_w " h" A_h " +BackgroundTrans gGUI_Drag"
             return
             
             GUI_Drag:
@@ -697,7 +698,7 @@ Class ContextAndHelpImageState
     GetImageSize(image) {
         if FileExist(image) {
             Gui, Add, Picture, hwndpic, % image
-            ControlGetPos,,, width, height,, ahk_id %pic%
+            ControlGetPos,,, width, height,, % "ahk_id " pic
             Gui, Destroy
         }
         else 
