@@ -26,7 +26,8 @@ Global HelpImage := new ContextAndHelpImageState
 Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mode
 
 ; ## Layer Mappings
-LShift & RShift::CapsLock
+#If, not ExtendState.IsActive()
+    LShift & RShift::CapsLock
 
 #If, ExtendState.IsActive() and not ExtendState.IsAwaitingInput()
     ; ### Help Shortcut
@@ -123,9 +124,6 @@ LShift & RShift::CapsLock
     
     ; ### Row 5 - spacebar 
     sc039::Enter
-
-#If
-
 #If, ExtendState.IsAwaitingInput() and GetKeyState(ExtendState.settings.adjust_key, "P")
     ; hold caps to adjust mark locations while awaiting input
 
