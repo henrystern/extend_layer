@@ -1,4 +1,4 @@
-#NoEnv
+﻿#NoEnv
 #installkeybdhook
 #MaxHotkeysPerInterval 200
 SendMode Input
@@ -622,6 +622,7 @@ Class ContextAndHelpImageState
     }
 
     AddContextMenu() {
+        Menu, Tray, Icon, assets/favicon.ico
         Menu, Tray, NoStandard
         Menu, Tray, Add, Show Help Image, ShowHelp
         Menu, Tray, Add
