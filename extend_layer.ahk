@@ -476,15 +476,15 @@ Class Marks
             ; these adjustments are because 0, 0 is always the top left of the gui but the mark position can be negative
             x_position := value.x - this.screen_dimension[0].left 
             y_position := value.y - this.screen_dimension[0].top
-            Gui, Add, button, x%x_position% y%y_position%, %key%
+            Gui, Add, button, x%x_position% y%y_position% -theme, %key%
         } 
         if last_x_position {
             ; this makes ' mark appear over any other marks
-            Gui, Add, button, x%last_x_position% y%last_y_position%, '
+            Gui, Add, button, x%last_x_position% y%last_y_position% -theme, '
         }
 
         Gui -Caption +LastFound +AlwaysOnTop +ToolWindow ; Lastfound is necessary for WinSet
-        WinSet, TransColor, EEAA99
+        WinSet, TransColor, % "EEAA99 " this.settings.mark_opacity * 10
         Gui, Show, % " x" this.screen_dimension[0].left " y" this.screen_dimension[0].top " w" this.screen_dimension[0].width " h" this.screen_dimension[0].height " NoActivate"
     }
 
