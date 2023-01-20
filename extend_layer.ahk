@@ -499,19 +499,17 @@ Class Marks
         }
         else {
             mark_to_use := this.NearbyMark(cur_x, cur_y)
-            nearby_mark := True
-            if not mark_to_use {
+            nearby_mark := (mark_to_use != -1)
+            if nearby_mark {
+                mark_priority := this.mark_arrays.usage_marks[mark_to_use].priority
+            }
+            else {
                 mark_to_use := this.FindLowestPriorityMark()
-                nearby_mark := False
             }
         }
         if mark_to_use {
             StringUpper, mark_to_use, mark_to_use ; uppercase reduces ambiguity
-            this.mark_arrays.usage_marks[mark_to_use] := {x:cur_x, y:cur_y}
-            if not nearby_mark {
-                this.mark_arrays.usage_marks[mark_to_use].priority := mark_priority
-                this.mark_arrays.usage_marks[mark_to_use].time_set := A_TickCount
-            }
+            this.mark_arrays.usage_marks[mark_to_use] := {x: cur_x, y: cur_y, priority: mark_priority, time_set: A_TickCount}
             if user_set {
                 IniWrite, % cur_x "|" cur_y, saved_marks.ini, MARKS, % "usage_mark-" mark_to_use
                 ToolTip, % "Set Mark at " mark_to_use
@@ -531,6 +529,7 @@ Class Marks
                 }
             }
         }
+        Return -1
     }
 
     FindLowestPriorityMark() {
