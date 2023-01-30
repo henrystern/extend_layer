@@ -612,7 +612,7 @@ Class ContextAndHelpImageState
 {
     __New() {
         this.status := False
-        this.image_path := ".\defaults.png"
+        this.image_path := ".\lite.png"
         this.image_dimensions := this.GetImageSize(this.image_path)
         this.bg_colour := "FFFFFF"
         this.AddContextMenu()
