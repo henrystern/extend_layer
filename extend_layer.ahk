@@ -623,6 +623,8 @@ Class ContextAndHelpImageState
         Menu, Tray, NoStandard
         Menu, Tray, Add, Show Help Image, ShowHelp
         Menu, Tray, Add
+        Menu, Tray, Add, Run on Startup, RunOnStartup
+        Menu, Tray, Add
         Menu, Tray, Add, Open Script Folder, OpenScriptDir
         Menu, Tray, Add, Edit Settings, EditSettings
         Menu, Tray, Add, Edit Marks, EditMarks
@@ -630,7 +632,22 @@ Class ContextAndHelpImageState
         Menu, Tray, Add
         Menu, Tray, Add, Reload Script, ReloadScript
         Menu, Tray, Add, Exit, ExitScript
+
+        if FileExist(A_Startup . "\extend_layer.lnk")
+            Menu, Tray, Check, Run on Startup
+
         Return
+
+        RunOnStartup:
+            if FileExist(A_Startup . "\extend_layer.lnk") {
+                Menu, Tray, Uncheck, Run on Startup
+                FileDelete, % A_Startup "\extend_layer.lnk"
+            }
+            else {
+                Menu, Tray, Check, Run on Startup
+                FileCreateShortcut, % A_ScriptFullPath, % A_Startup "\extend_layer.lnk"
+            }
+            Return
 
         ShowHelp:
             HelpImage.ToggleHelp()
