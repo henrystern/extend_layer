@@ -204,7 +204,7 @@ Hold() {
 PureToggle() {
     if (not ExtendState.IsActive()) {
         ExtendState.Activate()
-        ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+        CenterTooltip("Extend_Layer On")
     }
     else {
         KeyWait % ExtendState.settings.extend_key
@@ -219,7 +219,7 @@ TapToggle() {
         KeyWait % ExtendState.settings.extend_key
         if (A_PriorKey == ExtendState.settings.extend_key and A_TimeSinceThisHotkey < ExtendState.settings.tap_sensitivity) { 
             ; only toggle on a trigger press without any other keypresses
-            ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+            CenterTooltip("Extend_Layer On")
         }
         else {
             ExtendState.Deactivate()
@@ -230,6 +230,15 @@ TapToggle() {
         ExtendState.Deactivate()
         ToolTip
     }
+}
+
+CenterTooltip(msg) {
+    ; centers tooltip position to the bottom middle of the primary monitor
+    ToolTip, % msg, , % A_ScreenHeight
+    toolHwnd := "ahk_id" . WinExist("ahk_class tooltips_class32")
+    WinGetPos, x, y, w, h, % toolHwnd
+    toolX := (A_ScreenWidth - w) // 2
+    WinMove, % toolHwnd, , % toolX
 }
 
 ; ## Classes
