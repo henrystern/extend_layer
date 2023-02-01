@@ -633,8 +633,11 @@ Class ContextAndHelpImageState
         Menu, Tray, Add, Reload Script, ReloadScript
         Menu, Tray, Add, Exit, ExitScript
 
-        if FileExist(A_Startup . "\extend_layer.lnk")
+        ; So that the startup shortcut will work even if the script is moved
+        if FileExist(A_Startup . "\extend_layer.lnk") {
             Menu, Tray, Check, Run on Startup
+            FileCreateShortcut, % A_ScriptFullPath, % A_Startup "\extend_layer.lnk"
+        }
 
         Return
 
