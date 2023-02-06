@@ -124,8 +124,9 @@ Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mo
     
     ; ### Row 5 - spacebar 
     sc039::Enter
+
 #If, ExtendState.IsAwaitingInput() and GetKeyState(ExtendState.settings.adjust_key, "P")
-    ; hold caps to adjust mark locations while awaiting input
+    ; hold shift to adjust mark locations while awaiting input
 
     ; i, j, k, l
     *sc017::SessionMarks.AdjustMarkOffset("up")
@@ -140,15 +141,15 @@ Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mo
 ClearModifiers() {
     ; release modifiers if they were still being held down when extend was released
     If GetKeyState("Shift")
-        send {Shift up}
+        SendInput {Shift up}
     If GetKeyState("Ctrl")
-        send {Ctrl up}
+        SendInput {Ctrl up}
     If GetKeyState("Alt")
-        send {Alt up}
+        SendInput {Alt up}
     If GetKeyState("sc022e", "P")
-        send {LButton up}
+        SendInput {LButton up}
     If GetKeyState("sc030", "P")
-        send {RButton up}
+        SendInput {RButton up}
     Return
 }
 
@@ -303,15 +304,15 @@ Class MouseControls
         }
         else if GetKeyState("sc016", "P") {
             if GetKeyState("Shift", "P")
-                send {WheelLeft}
+                SendInput {WheelLeft}
             else
-                send {WheelUp}
+                SendInput {WheelUp}
         }
         else if GetKeyState("sc018", "P") {
             if GetKeyState("Shift", "P")
-                send {WheelRight}
+                SendInput {WheelRight}
             else
-                send {WheelDown}
+                SendInput {WheelDown}
         }
     }
 
