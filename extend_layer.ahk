@@ -124,8 +124,9 @@ Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mo
     
     ; ### Row 5 - spacebar 
     sc039::Enter
+
 #If, ExtendState.IsAwaitingInput() and GetKeyState(ExtendState.settings.adjust_key, "P")
-    ; hold caps to adjust mark locations while awaiting input
+    ; hold shift to adjust mark locations while awaiting input
 
     ; i, j, k, l
     *sc017::SessionMarks.AdjustMarkOffset("up")
@@ -140,15 +141,15 @@ Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mo
 ClearModifiers() {
     ; release modifiers if they were still being held down when extend was released
     If GetKeyState("Shift")
-        send {Shift up}
+        SendInput {Shift up}
     If GetKeyState("Ctrl")
-        send {Ctrl up}
+        SendInput {Ctrl up}
     If GetKeyState("Alt")
-        send {Alt up}
+        SendInput {Alt up}
     If GetKeyState("sc022e", "P")
-        send {LButton up}
+        SendInput {LButton up}
     If GetKeyState("sc030", "P")
-        send {RButton up}
+        SendInput {RButton up}
     Return
 }
 
@@ -204,7 +205,7 @@ Hold() {
 PureToggle() {
     if (not ExtendState.IsActive()) {
         ExtendState.Activate()
-        ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+        CenterTooltip("Extend_Layer On")
     }
     else {
         KeyWait % ExtendState.settings.extend_key
@@ -219,7 +220,7 @@ TapToggle() {
         KeyWait % ExtendState.settings.extend_key
         if (A_PriorKey == ExtendState.settings.extend_key and A_TimeSinceThisHotkey < ExtendState.settings.tap_sensitivity) { 
             ; only toggle on a trigger press without any other keypresses
-            ToolTip, Extend_Layer On, % A_ScreenWidth / 2, A_ScreenHeight 
+            CenterTooltip("Extend_Layer On")
         }
         else {
             ExtendState.Deactivate()
@@ -230,6 +231,15 @@ TapToggle() {
         ExtendState.Deactivate()
         ToolTip
     }
+}
+
+CenterTooltip(msg) {
+    ; centers tooltip position to the bottom middle of the primary monitor
+    ToolTip, % msg, , % A_ScreenHeight
+    toolHwnd := "ahk_id" . WinExist("ahk_class tooltips_class32")
+    WinGetPos, x, y, w, h, % toolHwnd
+    toolX := (A_ScreenWidth - w) // 2
+    WinMove, % toolHwnd, , % toolX
 }
 
 ; ## Classes
@@ -293,16 +303,28 @@ Class MouseControls
             return
         }
         else if GetKeyState("sc016", "P") {
-            if GetKeyState("Shift", "P")
-                send {WheelLeft}
-            else
-                send {WheelUp}
+            if GetKeyState("Shift", "P") {
+                ; WheelLeft
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x1000, int, x, int, y, uint, - this.settings.scroll_speed, int, 0)
+            }
+            else {
+                ; WheelUp
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x0800, int, x, int, y, uint, this.settings.scroll_speed, int, 0)
+            }
         }
         else if GetKeyState("sc018", "P") {
-            if GetKeyState("Shift", "P")
-                send {WheelRight}
-            else
-                send {WheelDown}
+            if GetKeyState("Shift", "P") {
+                ; WheelRight
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x1000, int, x, int, y, uint, this.settings.scroll_speed, int, 0)
+            }
+            else {
+                ; WheelDown
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x0800, int, x, int, y, uint, - this.settings.scroll_speed, int, 0)
+            }
         }
     }
 
@@ -633,8 +655,11 @@ Class ContextAndHelpImageState
         Menu, Tray, Add, Reload Script, ReloadScript
         Menu, Tray, Add, Exit, ExitScript
 
-        if FileExist(A_Startup . "\extend_layer.lnk")
+        ; So that the startup shortcut will work even if the script is moved
+        if FileExist(A_Startup . "\extend_layer.lnk") {
             Menu, Tray, Check, Run on Startup
+            FileCreateShortcut, % A_ScriptFullPath, % A_Startup "\extend_layer.lnk"
+        }
 
         Return
 
