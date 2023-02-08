@@ -303,16 +303,28 @@ Class MouseControls
             return
         }
         else if GetKeyState("sc016", "P") {
-            if GetKeyState("Shift", "P")
-                SendInput {WheelLeft}
-            else
-                SendInput {WheelUp}
+            if GetKeyState("Shift", "P") {
+                ; WheelLeft
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x1000, int, x, int, y, uint, - this.settings.scroll_speed, int, 0)
+            }
+            else {
+                ; WheelUp
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x0800, int, x, int, y, uint, this.settings.scroll_speed, int, 0)
+            }
         }
         else if GetKeyState("sc018", "P") {
-            if GetKeyState("Shift", "P")
-                SendInput {WheelRight}
-            else
-                SendInput {WheelDown}
+            if GetKeyState("Shift", "P") {
+                ; WheelRight
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x1000, int, x, int, y, uint, this.settings.scroll_speed, int, 0)
+            }
+            else {
+                ; WheelDown
+                ;		                  dwFlags      dx      dy        dwData                                       dwExtraInfo   
+                DllCall("mouse_event", uint, 0x0800, int, x, int, y, uint, - this.settings.scroll_speed, int, 0)
+            }
         }
     }
 
