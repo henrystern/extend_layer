@@ -1,6 +1,7 @@
 ﻿#NoEnv
 #installkeybdhook
 #MaxHotkeysPerInterval 200
+#InputLevel 1 ; so remaps reset hotstring recognizer
 SendMode Input
 SetBatchLines, -1
 SetWorkingDir % A_ScriptDir
