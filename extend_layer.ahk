@@ -147,7 +147,7 @@ ClearModifiers() {
         SendInput {Ctrl up}
     If GetKeyState("Alt")
         SendInput {Alt up}
-    If GetKeyState("sc022e", "P")
+    If GetKeyState("sc02e", "P")
         SendInput {LButton up}
     If GetKeyState("sc030", "P")
         SendInput {RButton up}
