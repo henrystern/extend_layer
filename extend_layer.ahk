@@ -339,6 +339,8 @@ Class MouseControls
         right := 0 + GetKeyState("sc026", "P")
 
         if (up == 0 and left == 0 and down == 0 and right == 0)
+            this.velocity_x := 0
+            this.velocity_y := 0
             return
 
         ; minor adjustment if adjust key held down
