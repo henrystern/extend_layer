@@ -26,6 +26,9 @@ Global HelpImage := new ContextAndHelpImageState
 ; ## Trigger Configuration
 Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mode
 
+; ## Set marks on mouse click
+~LButton::SessionMarks.SetMark()
+
 ; ## Layer Mappings
 #If, not ExtendState.IsActive()
     LShift & RShift::CapsLock
