@@ -1,6 +1,7 @@
 ﻿#NoEnv
 #installkeybdhook
 #MaxHotkeysPerInterval 200
+#InputLevel 1 ; so remaps reset hotstring recognizer
 SendMode Input
 SetBatchLines, -1
 SetWorkingDir % A_ScriptDir
@@ -24,6 +25,9 @@ Global HelpImage := new ContextAndHelpImageState
 
 ; ## Trigger Configuration
 Hotkey, % "*" ExtendState.settings.extend_key, % ExtendState.settings.trigger_mode
+
+; ## Set marks on mouse click
+~LButton::SessionMarks.SetMark()
 
 ; ## Layer Mappings
 #If, not ExtendState.IsActive()
@@ -146,7 +150,7 @@ ClearModifiers() {
         SendInput {Ctrl up}
     If GetKeyState("Alt")
         SendInput {Alt up}
-    If GetKeyState("sc022e", "P")
+    If GetKeyState("sc02e", "P")
         SendInput {LButton up}
     If GetKeyState("sc030", "P")
         SendInput {RButton up}
@@ -338,6 +342,8 @@ Class MouseControls
         right := 0 + GetKeyState("sc026", "P")
 
         if (up == 0 and left == 0 and down == 0 and right == 0)
+            this.velocity_x := 0
+            this.velocity_y := 0
             return
 
         ; minor adjustment if adjust key held down
